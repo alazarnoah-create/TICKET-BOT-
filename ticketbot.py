@@ -243,35 +243,41 @@ def pick_time_slot(scope):
 
 
 def set_quantity(scope, cfg):
-    """Pick the ticket quantity. Returns the quantity chosen (0 if nothing was found)."""
+    """Max out the order: take as many tickets as allowed from the first ticket type that isn't
+    sold out, and if it can't cover the full amount, top up from the next available types.
+    Returns the total number of tickets chosen (0 if no ticket controls were found)."""
     want = min(int(cfg["quantity"]), MAX_QUANTITY)
-    rows = scope.locator("[data-testid*=ticket], [class*=ticket-card], li, [role=listitem]")
+    container = scope
     if cfg["ticket_name"]:
+        rows = scope.locator("[data-testid*=ticket], [class*=ticket-card], li, [role=listitem]")
         rows = rows.filter(has_text=re.compile(re.escape(cfg["ticket_name"]), re.I))
         container = rows.first if rows.count() else scope
-    else:
-        container = scope
 
-    # Wait for either kind of quantity control (dropdown or + button), whichever Eventbrite shows.
-    first_visible(container.locator("select").or_(container.get_by_role("button", name=INCREASE)), timeout=8000)
-    select = first_visible(container.locator("select"))
-    if select:
-        values = [v for v in select.locator("option").evaluate_all("os => os.map(o => o.value)") if v.isdigit()]
-        best = max((int(v) for v in values if int(v) <= want), default=0)
-        if best:
-            select.select_option(str(best))
-            return best
-
-    plus = first_visible(container.get_by_role("button", name=INCREASE))
-    if plus:
-        chosen = 0
-        for _ in range(want):
-            if not plus.is_enabled():
-                break
-            plus.click()
-            chosen += 1
-        return chosen
-    return 0
+    # One control per ticket type, top to bottom: a dropdown or a "+" button.
+    controls = container.locator("select").or_(container.get_by_role("button", name=INCREASE))
+    first_visible(controls, timeout=8000)
+    controls = controls.filter(visible=True)
+    total = 0
+    for i in range(controls.count()):
+        if total >= want:
+            break
+        control = controls.nth(i)
+        try:
+            if not control.is_enabled():
+                continue  # sold out
+            if control.evaluate("e => e.tagName") == "SELECT":
+                values = control.locator("option").evaluate_all("os => os.map(o => o.value)")
+                best = max((int(v) for v in values if v.isdigit() and int(v) <= want - total), default=0)
+                if best:
+                    control.select_option(str(best))
+                    total += best
+            else:
+                while total < want and control.is_enabled():
+                    control.click()
+                    total += 1
+        except PlaywrightError:
+            continue
+    return total
 
 
 def try_buy(page, cfg):

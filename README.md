@@ -9,7 +9,9 @@ then gets you to the payment step. You confirm with Apple Pay yourself.
 2. Finds that drop's event on the [Trinity Social organizer page](https://www.eventbrite.ca/o/trinity-social-38111092183):
    the "Dollar Beers" event with the drop's date in its name. You don't paste a link each time.
 3. Opens the event in its own logged-in browser window and refreshes every second.
-4. When **Get tickets** appears, it clicks it, picks **4 tickets**, and clicks **Check out**.
+4. When **Get tickets** appears, it clicks it and maxes out the order at **4 tickets**. It skips
+   sold-out ticket types (and sold-out time slots), takes as many as it can from the next available
+   one, and tops up from the one after if needed. Then it clicks **Check out**.
 5. It alerts you with a Mac notification, a sound, a spoken alert, and an optional phone push.
    Then you pay with Apple Pay.
 

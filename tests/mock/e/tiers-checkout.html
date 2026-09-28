@@ -1,0 +1,10 @@
+<!doctype html><html><body>
+<!-- Dollar Beers with price tiers: the first sold out, the next with only 2 left. -->
+<ul>
+  <li>Early Bird Entry $3 <span>Sold out</span></li>
+  <li>Tier 2 Entry $5 <select name="t2"><option value="0">0</option><option>1</option><option>2</option></select></li>
+  <li>Tier 3 Entry $8 <select name="t3"><option value="0">0</option><option>1</option><option>2</option>
+      <option>3</option><option>4</option></select></li>
+</ul>
+<button onclick="document.title='ORDER t2='+document.querySelector('[name=t2]').value+' t3='+document.querySelector('[name=t3]').value">Check out</button>
+</body></html>
