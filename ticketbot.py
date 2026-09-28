@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Eventbrite drop helper: waits for the Tue/Sat 6 PM drop, grabs your tickets,
-and gets you to the payment step so you can confirm with Apple Pay.
+"""Eventbrite drop helper for the Tue/Sat 6 PM drop.
 
-You log in yourself once (`python ticketbot.py login`); the login is kept in a
-local browser profile, so no password is ever stored by this script.
+`run` (default): at the drop, opens the event in your own Safari and alerts you, so you
+click Get tickets and pay with Apple Pay yourself. No automated clicking.
+
+`auto`: the older fully automated mode in a separate Chrome window (log in with `login`).
 """
 
 import argparse
@@ -372,6 +373,11 @@ def find_event(page, cfg, drop):
               a.parentElement && a.parentElement.parentElement && a.parentElement.parentElement.innerText]
              .filter(Boolean).join(' ')])"""
     )
+    return choose_event(links, cfg, drop)
+
+
+def choose_event(links, cfg, drop):
+    """From (url, text) pairs, pick this drop's event: the keyword plus the drop's date."""
     keyword = re.compile(re.escape(cfg["event_keyword"]), re.I)
     events = {}
     for href, text in links:
@@ -386,6 +392,58 @@ def find_event(page, cfg, drop):
     if events and datetime.now() >= drop + timedelta(minutes=2):
         return next(iter(events))
     return None
+
+
+# ---------------------------------------------------------------- Safari mode
+
+EVENT_LINK = re.compile(r"https://www\.eventbrite\.[a-z.]+/e/[a-z0-9-]+-\d+", re.I)
+
+
+def find_event_http(cfg, drop):
+    """Read the organizer page (one plain request, no browser) and pick this drop's event."""
+    try:
+        req = urllib.request.Request(cfg["organizer_url"], headers={"User-Agent": "ticketbot/1.0 (personal use)"})
+        html = urllib.request.urlopen(req, timeout=10).read().decode("utf-8", "replace")
+    except OSError as exc:
+        log(f"Couldn't read the organizer page ({exc}).")
+        return None
+    links = [(url, "") for url in dict.fromkeys(EVENT_LINK.findall(html))]
+    return choose_event(links, cfg, drop)
+
+
+def open_in_safari(url):
+    log(f"Opening in Safari: {url}")
+    if sys.platform == "darwin":
+        subprocess.run(["open", "-a", "Safari", url], check=False)
+
+
+def safari(cfg, args):
+    """Open the event in your own Safari right at the drop and alert you to buy."""
+    drop = datetime.now() if args.now else next_drop(cfg)
+    log(f"Target drop: {drop:%A %d %b %H:%M}. Safari will open the event then - you buy it.")
+    heads_up = drop - timedelta(minutes=2)
+
+    wait_until(heads_up)
+    url = cfg["event_url"] or find_event_http(cfg, drop)
+    if not args.now:
+        open_in_safari(url or cfg["organizer_url"])
+        alert("2 minutes to go", "Safari has the event open. Check you're logged in to Eventbrite.", cfg["ntfy_topic"])
+
+    wait_until(drop)
+    # The event can be posted right at the drop, so keep checking for up to 2 minutes.
+    deadline = datetime.now() + timedelta(minutes=2)
+    while not url and datetime.now() < deadline:
+        url = find_event_http(cfg, drop)
+        if not url:
+            time.sleep(5)
+    if url:
+        open_in_safari(url)
+        alert("GO NOW!", "Click Get tickets, choose 4, Check out, pay with Apple Pay. "
+              "No Get tickets button? Press Cmd+R.", cfg["ntfy_topic"])
+    else:
+        open_in_safari(cfg["organizer_url"])
+        alert("GO NOW!", "Couldn't spot the event - click the newest Dollar Beers event in Safari.", cfg["ntfy_topic"])
+    return 0
 
 
 def visible_buttons(page):
@@ -482,7 +540,10 @@ def main():
     parser.add_argument("--browser", choices=["chrome", "chromium"], default="chrome")
     sub = parser.add_subparsers(dest="cmd", required=True)
     sub.add_parser("login", help="log in to Eventbrite once; the session is remembered")
-    r = sub.add_parser("run", help="wait for the next drop and buy")
+    s = sub.add_parser("run", help="at the drop, open the event in Safari and alert you")
+    s.add_argument("--event-url")
+    s.add_argument("--now", action="store_true", help="don't wait for the drop; open it right away")
+    r = sub.add_parser("auto", help="fully automated mode in a separate Chrome window")
     r.add_argument("--event-url")
     r.add_argument("--quantity", type=int)
     r.add_argument("--now", action="store_true", help="skip the wait and start polling immediately")
@@ -493,6 +554,10 @@ def main():
 
     cfg = load_config(args.config)
     if args.cmd == "run":
+        if args.event_url:
+            cfg["event_url"] = args.event_url
+        return safari(cfg, args)
+    if args.cmd == "auto":
         if args.event_url:
             cfg["event_url"] = args.event_url
         if args.quantity:
