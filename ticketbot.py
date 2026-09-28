@@ -71,8 +71,10 @@ def alert(title, message, ntfy_topic=""):
     """Loud alert: console, macOS notification + sound, optional phone push."""
     log(f"*** {title}: {message}")
     if sys.platform == "darwin":
-        script = f'display notification {json.dumps(message)} with title {json.dumps(title)} sound name "Glass"'
-        subprocess.run(["osascript", "-e", script], check=False)
+        # A pop-up box with an OK button (a notification would open Script Editor when clicked).
+        script = f'display alert {json.dumps(title)} message {json.dumps(message)} giving up after 120'
+        subprocess.Popen(["osascript", "-e", script], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.Popen(["afplay", "/System/Library/Sounds/Glass.aiff"])
         subprocess.Popen(["say", title])
     else:
         print("\a", end="", flush=True)
@@ -180,21 +182,49 @@ def first_visible(locator, timeout=0):
     return None
 
 
-def checkout_scope(page, timeout_ms=10000):
-    """Where the ticket options appear: a dialog in the page ("Choose options"), an embedded
-    checkout iframe, or a separate checkout page. Returns whichever shows up first."""
-    dialog = page.locator("[role=dialog], [aria-modal=true]").filter(visible=True)
+# The "Choose options" popup, found from its heading in case it isn't marked up as a dialog.
+OPTIONS_POPUP = (
+    "xpath=//*[normalize-space(text())='Choose options' or normalize-space(text())='Select tickets']"
+    "/ancestor::*[@role='dialog' or @aria-modal='true' or contains(@class,'modal') or contains(@class,'Modal')][1]"
+)
+
+
+def checkout_scope(page, timeout_ms=4000):
+    """Where the ticket options appear: a popup in the page ("Choose options"), an embedded
+    checkout iframe, or a separate checkout page. Returns whichever shows up first, or None."""
+    popup = page.locator("[role=dialog], [aria-modal=true]").or_(page.locator(OPTIONS_POPUP)).filter(visible=True)
+    heading = page.get_by_text(re.compile(r"^\s*(choose options|select tickets)\s*$", re.I)).filter(visible=True)
     deadline = time.time() + timeout_ms / 1000
     while time.time() < deadline:
         for frame in page.frames:
             if frame is not page.main_frame and "checkout" in (frame.url or ""):
                 return frame
-        if dialog.count():
-            return dialog.last
-        if "checkout" in page.url:
+        if popup.count():
+            return popup.last
+        if "checkout" in page.url or heading.count():
             return page
         page.wait_for_timeout(100)
-    return page
+    return None
+
+
+def open_options(page, cfg):
+    """Click the ticket button and make sure the ticket options actually open. A click that lands
+    before the page is ready does nothing, so click again (trying each matching button)."""
+    buttons = page.get_by_role("button", name=GET_TICKETS).or_(page.get_by_role("link", name=GET_TICKETS))
+    if not first_visible(buttons, timeout=cfg["button_wait_seconds"] * 1000):
+        return None
+    log("Tickets are live - clicking.")
+    buttons = buttons.filter(visible=True)
+    for attempt in range(6):
+        try:
+            buttons.nth(attempt % max(buttons.count(), 1)).click(timeout=3000)
+        except PlaywrightError:
+            pass
+        scope = checkout_scope(page, timeout_ms=1500 + 500 * attempt)
+        if scope is not None:
+            return scope
+        log("The ticket options didn't open yet - clicking again.")
+    return page  # carry on and let the checks below report what's on screen
 
 
 def check_blocked(page, cfg):
@@ -235,7 +265,7 @@ def pick_time_slot(scope):
             if info["disabled"] or UNAVAILABLE.search(label):
                 log(f"Skipping {label}")
                 continue
-            slot.click()
+            slot.click(timeout=3000)
             return label
         except PlaywrightError:
             continue
@@ -283,16 +313,9 @@ def set_quantity(scope, cfg):
 def try_buy(page, cfg):
     """One attempt at the event page. Returns True once tickets are in checkout."""
     # The button is drawn by JavaScript a moment after the page loads, so give it time to appear.
-    button = first_visible(
-        page.get_by_role("button", name=GET_TICKETS).or_(page.get_by_role("link", name=GET_TICKETS)),
-        timeout=cfg["button_wait_seconds"] * 1000,
-    )
-    if not button:
+    scope = open_options(page, cfg)
+    if scope is None:
         return False
-    log("Tickets are live - clicking.")
-    button.click()
-
-    scope = checkout_scope(page)
     # Multi-date events ("Choose options"): the nearest date is preselected, pick a time slot.
     options = scope.get_by_text(TIME_SLOT).or_(scope.locator("select")).or_(scope.get_by_role("button", name=INCREASE))
     first_visible(options, timeout=5000)

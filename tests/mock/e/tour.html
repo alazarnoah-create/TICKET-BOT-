@@ -7,11 +7,13 @@
 <script>
   setTimeout(() => {
     document.getElementById('cta').innerHTML = '<button id="buy">Check availability</button>';
-    document.getElementById('buy').onclick = openModal;
+    // Like the real run: the first click lands before the page is ready and does nothing.
+    let clicks = 0;
+    document.getElementById('buy').onclick = () => { if (++clicks > 1) openModal(); };
   }, 1500);
   function openModal() {
     document.getElementById('modal').innerHTML = `
-      <div role="dialog" aria-modal="true">
+      <div class="eds-modal">
         <h2>Choose options</h2>
         <button>Date <span>Wed, Sep 30</span></button>
         <section><h3>Time</h3><p>Each option is 2 hours long</p>
