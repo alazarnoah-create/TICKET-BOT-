@@ -1,4 +1,8 @@
 #!/bin/bash
 # Runs the ticket bot; caffeinate keeps your Mac awake while it waits for the drop.
 cd "$(dirname "$0")"
+if [ ! -x .venv/bin/python ]; then
+  echo "First run in this folder - setting up (takes a minute)..."
+  bash setup.sh || exit 1
+fi
 exec caffeinate -i .venv/bin/python ticketbot.py "$@"
