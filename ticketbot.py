@@ -11,6 +11,7 @@ import argparse
 import json
 import os
 import re
+import ssl
 import subprocess
 import sys
 import time
@@ -418,11 +419,20 @@ def choose_event(links, cfg, drop):
 EVENT_LINK = re.compile(r"https://www\.eventbrite\.[a-z.]+/e/[a-z0-9-]+-\d+", re.I)
 
 
+def ssl_context():
+    """Python from python.org on a Mac ships without web certificates; use certifi's if installed."""
+    try:
+        import certifi
+        return ssl.create_default_context(cafile=certifi.where())
+    except ImportError:
+        return ssl.create_default_context()
+
+
 def organizer_links(cfg):
     """Event links on the organizer page (one plain request, no browser), or None if unreadable."""
     try:
         req = urllib.request.Request(cfg["organizer_url"], headers={"User-Agent": "ticketbot/1.0 (personal use)"})
-        html = urllib.request.urlopen(req, timeout=10).read().decode("utf-8", "replace")
+        html = urllib.request.urlopen(req, timeout=10, context=ssl_context()).read().decode("utf-8", "replace")
     except OSError as exc:
         log(f"Couldn't read the organizer page ({exc}).")
         return None
