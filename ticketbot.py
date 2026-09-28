@@ -402,16 +402,43 @@ def choose_event(links, cfg, drop):
 EVENT_LINK = re.compile(r"https://www\.eventbrite\.[a-z.]+/e/[a-z0-9-]+-\d+", re.I)
 
 
-def find_event_http(cfg, drop):
-    """Read the organizer page (one plain request, no browser) and pick this drop's event."""
+def organizer_links(cfg):
+    """Event links on the organizer page (one plain request, no browser), or None if unreadable."""
     try:
         req = urllib.request.Request(cfg["organizer_url"], headers={"User-Agent": "ticketbot/1.0 (personal use)"})
         html = urllib.request.urlopen(req, timeout=10).read().decode("utf-8", "replace")
     except OSError as exc:
         log(f"Couldn't read the organizer page ({exc}).")
         return None
-    links = [(url, "") for url in dict.fromkeys(EVENT_LINK.findall(html))]
-    return choose_event(links, cfg, drop)
+    return [(url, "") for url in dict.fromkeys(EVENT_LINK.findall(html))]
+
+
+def find_event_http(cfg, drop):
+    """Pick this drop's event from the organizer page."""
+    links = organizer_links(cfg)
+    return choose_event(links, cfg, drop) if links else None
+
+
+def check(cfg):
+    """Show what the bot can see on the organizer page right now, and the next drop."""
+    print(f"Next drop: {next_drop(cfg):%A %d %b at %H:%M}")
+    links = organizer_links(cfg)
+    if links is None:
+        print("PROBLEM: couldn't read the Trinity Social page. At the drop the bot will open that page in "
+              "Safari instead, and you click the Dollar Beers event.")
+        return 1
+    keyword = re.compile(re.escape(cfg["event_keyword"]), re.I)
+    matches = [u for u, _ in links if keyword.search(u.replace("-", " "))]
+    print(f"OK: read the Trinity Social page - {len(links)} event link(s), {len(matches)} Dollar Beers:")
+    for url in matches:
+        print("   ", url)
+    if not links:
+        print("PROBLEM: no event links visible to the bot. At the drop it will open the Trinity Social page "
+              "in Safari instead, and you click the Dollar Beers event.")
+        return 1
+    if not matches:
+        print("(No Dollar Beers event is posted right now - that's normal until closer to the drop.)")
+    return 0
 
 
 STEP_JS = (HERE / "safari_step.js").read_text()
@@ -639,6 +666,7 @@ def main():
     r.add_argument("--now", action="store_true", help="skip the wait and start polling immediately")
     r.add_argument("--no-keep-open", dest="keep_open", action="store_false")
     sub.add_parser("next", help="show when the next drop is")
+    sub.add_parser("check", help="check the bot can see Trinity's events")
     sub.add_parser("test-alert", help="fire a test notification")
     args = parser.parse_args()
 
@@ -655,6 +683,8 @@ def main():
         return run(cfg, args)
     if args.cmd == "login":
         return login(args)
+    if args.cmd == "check":
+        return check(cfg)
     if args.cmd == "next":
         print(f"Next drop: {next_drop(cfg):%A %d %b %Y at %H:%M}")
         return 0

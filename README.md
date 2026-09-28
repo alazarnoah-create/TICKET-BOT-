@@ -48,6 +48,7 @@ pay with Apple Pay. If the bot can't click (the Safari setting above is off), it
 Other commands:
 
 - `bash bot next`: shows when the next drop is.
+- `bash bot check`: checks the bot can read the Trinity Social page and lists any Dollar Beers events it sees.
 - `bash bot test-alert`: checks the alert and sound work.
 - `bash bot run --now --event-url "https://www.eventbrite.ca/e/..."`: runs on a specific event right away (practice; don't pay).
 - `bash bot run --manual`: only opens the event and alerts you; you do all the clicking.
