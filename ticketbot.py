@@ -27,6 +27,8 @@ PROFILE_DIR = Path(os.environ.get("TICKETBOT_PROFILE", Path.home() / ".ticketbot
 SIGNIN_URL = "https://www.eventbrite.com/signin/"
 
 DEFAULTS = {
+    "organizer_url": "https://www.eventbrite.ca/o/trinity-social-38111092183",
+    "event_keyword": "dollar beer",
     "event_url": "",
     "quantity": 4,
     "ticket_name": "",
@@ -43,8 +45,7 @@ DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sun
 GET_TICKETS = re.compile(r"^\s*(get tickets|buy tickets|reserve( a spot)?|register|tickets)\s*$", re.I)
 CHECKOUT = re.compile(r"^\s*(check ?out|register|continue|reserve|place order)\s*$", re.I)
 INCREASE = re.compile(r"(increase|add one|plus|\+)", re.I)
-NOT_YET = re.compile(r"(sales start|sales begin|on sale|not yet available|sold out|sales ended|unavailable)", re.I)
-BLOCKED = re.compile(r"(captcha|verify you are human|waiting room|you are in line|queue)", re.I)
+BLOCKED = re.compile(r"(captcha|verify you are human|waiting room|you are (now )?in line)", re.I)
 
 
 def log(msg):
@@ -218,19 +219,65 @@ def try_buy(page, cfg):
     return True
 
 
+def date_pattern(day):
+    """Matches how Eventbrite writes the date: "Sept 29", "Sep 29", "Tue, Sep 29", "September 29"."""
+    return re.compile(rf"\b{day:%b}[a-z]*\.?\s+0?{day.day}\b", re.I)
+
+
+def find_event(page, cfg, drop):
+    """Look on the organizer page for this drop's event. Returns its URL or None."""
+    page.goto(cfg["organizer_url"], wait_until="domcontentloaded")
+    page.wait_for_timeout(1500)  # the event list is rendered by JavaScript
+    links = page.locator("a[href*='/e/']").evaluate_all(
+        """els => els.map(a => [a.href.split('?')[0],
+             [a.getAttribute('aria-label'), a.innerText,
+              a.parentElement && a.parentElement.parentElement && a.parentElement.parentElement.innerText]
+             .filter(Boolean).join(' ')])"""
+    )
+    keyword = re.compile(re.escape(cfg["event_keyword"]), re.I)
+    events = {}
+    for href, text in links:
+        if keyword.search(text) or keyword.search(href.replace("-", " ")):
+            events[href] = events.get(href, "") + " " + text
+    on_date = date_pattern(drop)
+    dated = [h for h, t in events.items() if on_date.search(t) or on_date.search(h.replace("-", " "))]
+    if dated:
+        return dated[0]
+    # Event names normally include the date; if none do, fall back to the first upcoming one
+    # once the drop has started, so a naming change doesn't make us miss it.
+    if events and datetime.now() >= drop + timedelta(minutes=2):
+        return next(iter(events))
+    return None
+
+
 def run(cfg, args):
-    if not cfg["event_url"]:
-        sys.exit("Set event_url in config.json (or pass --event-url).")
+    if not (cfg["event_url"] or cfg["organizer_url"]):
+        sys.exit("Set event_url or organizer_url in config.json (or pass --event-url).")
 
     drop = datetime.now() if args.now else next_drop(cfg)
-    log(f"Target drop: {drop:%A %d %b %H:%M}, {cfg['quantity']} ticket(s), {cfg['event_url']}")
+    log(f"Target drop: {drop:%A %d %b %H:%M}, {cfg['quantity']} ticket(s)")
     wait_until(drop - timedelta(seconds=cfg["start_early_seconds"]))
 
     with sync_playwright() as pw:
         ctx = open_browser(pw, args.browser)
         page = ctx.pages[0] if ctx.pages else ctx.new_page()
-        page.goto(cfg["event_url"], wait_until="domcontentloaded")
         give_up = drop + timedelta(minutes=cfg["give_up_minutes"])
+
+        event_url = cfg["event_url"]
+        while not event_url and datetime.now() < give_up:
+            try:
+                event_url = find_event(page, cfg, drop)
+            except PlaywrightError as exc:
+                log(f"Hiccup: {exc.__class__.__name__}: {str(exc).splitlines()[0]}")
+            if not event_url:
+                log(f"No {drop:%b %d} event posted yet, checking again...")
+                time.sleep(max(cfg["poll_seconds"], 5))
+        if not event_url:
+            alert("No luck", "This drop's event never showed up on the organizer page.", cfg["ntfy_topic"])
+            ctx.close()
+            return 1
+        log(f"Event: {event_url}")
+        page.goto(event_url, wait_until="domcontentloaded")
 
         done = False
         while not done and datetime.now() < give_up:

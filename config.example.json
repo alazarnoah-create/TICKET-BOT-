@@ -1,8 +1,13 @@
 {
-  "event_url": "https://www.eventbrite.com/e/PASTE-THE-EVENT-LINK-HERE",
+  "organizer_url": "https://www.eventbrite.ca/o/trinity-social-38111092183",
+  "event_keyword": "dollar beer",
+  "event_url": "",
   "quantity": 4,
   "ticket_name": "",
-  "drop_days": ["tuesday", "saturday"],
+  "drop_days": [
+    "tuesday",
+    "saturday"
+  ],
   "drop_time": "18:00",
   "start_early_seconds": 60,
   "poll_seconds": 2.0,

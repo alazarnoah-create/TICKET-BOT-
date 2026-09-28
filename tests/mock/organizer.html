@@ -1,0 +1,11 @@
+<!doctype html><html><body>
+<h1>Trinity Social</h1>
+<div id="list"></div>
+<script>
+  // Rendered by JS like the real organizer page; the date is today's.
+  const d = new Date(), mon = d.toLocaleString('en', {month: 'short'});
+  document.getElementById('list').innerHTML = `
+    <div><div><a href="/e/old.html">Throwback Dollar Beers - TUESDAY, ${mon} ${d.getDate() === 1 ? 2 : 1} - Guaranteed Entry</a></div></div>
+    <div><div><a href="/e/trivia.html">Trivia Night - ${mon} ${d.getDate()}</a></div></div>
+    <div><div><a href="/e/event.html?aff=x">Dollar Beers - TONIGHT, ${mon}t ${d.getDate()} - Guaranteed Entry Before 10PM</a></div></div>`;
+</script></body></html>
