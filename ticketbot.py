@@ -47,11 +47,7 @@ DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sun
 
 GET_TICKETS = re.compile(r"^\s*(get tickets|buy tickets|reserve( a spot)?|register|check availability|select (a )?date)", re.I)
 CHECKOUT = re.compile(r"^\s*(check ?out|register|continue|reserve|place order)", re.I)
-# A date or time slot, e.g. "Tue, Sep 29", "September 29", "29", "10:00 AM".
-DATE_OR_TIME = re.compile(
-    r"\b(mon|tue|wed|thu|fri|sat|sun|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\b|\b\d{1,2}:\d{2}\s*(am|pm)?\b",
-    re.I,
-)
+TIME_SLOT = re.compile(r"^\s*\d{1,2}:\d{2}\s*(am|pm)?\s*$", re.I)
 UNAVAILABLE = re.compile(r"(sold out|unavailable|sales ended|full)", re.I)
 SIGN_IN = re.compile(r"^\s*(sign in|log in)\s*$", re.I)
 INCREASE = re.compile(r"(increase|add one|plus|\+)", re.I)
@@ -162,6 +158,8 @@ def goto(page, url=None):
         page.wait_for_load_state("domcontentloaded", timeout=15000)
     except PlaywrightTimeout:
         log("Page is loading slowly - carrying on anyway.")
+    except PlaywrightError as exc:
+        log(f"Couldn't load the page ({str(exc).splitlines()[0]}) - will retry.")
 
 
 def first_visible(locator, timeout=0):
@@ -182,18 +180,20 @@ def first_visible(locator, timeout=0):
     return None
 
 
-def checkout_scope(page, timeout_ms=15000):
-    """Eventbrite opens checkout in a modal iframe or on its own page; return whichever appears."""
+def checkout_scope(page, timeout_ms=10000):
+    """Where the ticket options appear: a dialog in the page ("Choose options"), an embedded
+    checkout iframe, or a separate checkout page. Returns whichever shows up first."""
+    dialog = page.locator("[role=dialog], [aria-modal=true]").filter(visible=True)
     deadline = time.time() + timeout_ms / 1000
     while time.time() < deadline:
         for frame in page.frames:
-            if frame is page.main_frame:
-                continue
-            if "checkout" in (frame.url or "") or "tickets" in (frame.name or ""):
+            if frame is not page.main_frame and "checkout" in (frame.url or ""):
                 return frame
-        if "checkout" in page.url or page.locator("select, [data-testid*=quantity]").count():
+        if dialog.count():
+            return dialog.last
+        if "checkout" in page.url:
             return page
-        page.wait_for_timeout(250)
+        page.wait_for_timeout(100)
     return page
 
 
@@ -209,21 +209,34 @@ def has_quantity_control(scope):
     return first_visible(scope.locator("select").or_(scope.get_by_role("button", name=INCREASE))) is not None
 
 
-def pick_nearest_date(scope):
-    """For events with several dates: click the first (soonest) available date or time slot.
-    Returns its label, or None if there is nothing to pick."""
-    options = scope.get_by_role("button").or_(scope.get_by_role("radio")).or_(scope.get_by_role("option"))
-    options = options.filter(visible=True)
-    for i in range(options.count()):
-        opt = options.nth(i)
+# Given a time label, find the whole slot box around it (stopping before the list that holds
+# several slots) and report its text and whether it's disabled.
+SLOT_INFO_JS = """el => {
+  let box = el;
+  for (let i = 0; i < 5 && box.parentElement; i++) {
+    const up = box.parentElement;
+    if ((up.innerText.match(/\\d{1,2}:\\d{2}/g) || []).length > 1) break;
+    box = up;
+  }
+  const disabled = !!box.closest('[aria-disabled=true], [disabled], [data-disabled=true]');
+  return {text: box.innerText, disabled};
+}"""
+
+
+def pick_time_slot(scope):
+    """On multi-date events Eventbrite preselects the nearest available date, then lists time
+    slots. Click the earliest slot that isn't sold out. Returns its label, or None."""
+    slots = scope.get_by_text(TIME_SLOT).filter(visible=True)
+    for i in range(slots.count()):
+        slot = slots.nth(i)
         try:
-            label = (opt.get_attribute("aria-label") or opt.inner_text()).strip()
-            if not DATE_OR_TIME.search(label) or UNAVAILABLE.search(label):
+            info = slot.evaluate(SLOT_INFO_JS)
+            label = " ".join(info["text"].split())
+            if info["disabled"] or UNAVAILABLE.search(label):
+                log(f"Skipping {label}")
                 continue
-            if not opt.is_enabled() or opt.get_attribute("aria-disabled") == "true":
-                continue
-            opt.click()
-            return label.replace("\n", " ")
+            slot.click()
+            return label
         except PlaywrightError:
             continue
     return None
@@ -274,21 +287,16 @@ def try_buy(page, cfg):
     button.click()
 
     scope = checkout_scope(page)
-    # Events with several dates show a date (and maybe time) picker before the quantity.
-    for _ in range(3):
-        if has_quantity_control(scope):
-            break
-        page.wait_for_timeout(700)
-        if has_quantity_control(scope):
-            break
-        picked = pick_nearest_date(scope)
-        if not picked:
-            break
-        log(f"Picked the nearest available date: {picked}")
-        page.wait_for_timeout(500)
-        scope = checkout_scope(page, timeout_ms=5000)
+    # Multi-date events ("Choose options"): the nearest date is preselected, pick a time slot.
+    options = scope.get_by_text(TIME_SLOT).or_(scope.locator("select")).or_(scope.get_by_role("button", name=INCREASE))
+    first_visible(options, timeout=5000)
+    if not has_quantity_control(scope):
+        picked = pick_time_slot(scope)
+        if picked:
+            log(f"Picked the earliest available time: {picked}")
     qty = set_quantity(scope, cfg)
     if not qty:
+        log(f"Couldn't find the ticket count. Buttons in the popup: {visible_buttons(scope)}")
         alert("Tickets are live!", "Couldn't set the quantity automatically - pick it in the browser NOW.", cfg["ntfy_topic"])
         return True
     log(f"Selected {qty} ticket(s).")
