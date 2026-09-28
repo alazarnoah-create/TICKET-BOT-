@@ -34,12 +34,19 @@ If Eventbrite shows a CAPTCHA, the bot alerts **Solve the CAPTCHA now!** Solve i
 
 ## Every drop
 
+Tickets go on sale at **6 PM**, often a day or more before the party. Trinity announces the day on
+[Instagram (@trinityktown)](https://www.instagram.com/trinityktown/) (e.g. "Tickets for dollar beers go on
+sale Friday at 6PM"). The bot grabs the **next upcoming** Dollar Beers event, whatever night it's for.
+
 Open Terminal, point it at this folder (`cd ` then drag the folder in and press Enter), and run
 this any time before 6 PM:
 
 ```bash
 bash bot run
 ```
+
+That waits for the next Tuesday or Saturday at 6 PM. If Trinity announces a different day, add it,
+e.g. `bash bot run --day friday`.
 
 Leave it running, and don't use Safari while it works. When **Tickets in your cart!** goes off,
 pay with Apple Pay. If the bot can't click (the Safari setting above is off), it alerts

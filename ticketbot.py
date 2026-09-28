@@ -15,7 +15,7 @@ import subprocess
 import sys
 import time
 import urllib.request
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from pathlib import Path
 
 from playwright.sync_api import Error as PlaywrightError
@@ -361,11 +361,6 @@ def try_buy(page, cfg):
     return True
 
 
-def date_pattern(day):
-    """Matches how Eventbrite writes the date: "Sept 29", "Sep 29", "Tue, Sep 29", "September 29"."""
-    return re.compile(rf"\b{day:%b}[a-z]*\.?\s+0?{day.day}\b", re.I)
-
-
 def find_event(page, cfg, drop):
     """Look on the organizer page for this drop's event. Returns its URL or None."""
     goto(page, cfg["organizer_url"])
@@ -379,22 +374,43 @@ def find_event(page, cfg, drop):
     return choose_event(links, cfg, drop)
 
 
+MONTHS = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"]
+EVENT_DATE = re.compile(r"\b(" + "|".join(MONTHS) + r")[a-z]*\.?\s+(\d{1,2})(?!\d)", re.I)
+
+
+def event_date(text, today):
+    """The party date written in an event's name, e.g. 'Dollar Beers - TUESDAY, Sept 29' -> Sep 29."""
+    m = EVENT_DATE.search(text)
+    if not m:
+        return None
+    try:
+        d = date(today.year, MONTHS.index(m.group(1)[:3].lower()) + 1, int(m.group(2)))
+    except ValueError:
+        return None
+    if d < today - timedelta(days=90):  # e.g. a January party seen in December
+        d = d.replace(year=today.year + 1)
+    return d
+
+
 def choose_event(links, cfg, drop):
-    """From (url, text) pairs, pick this drop's event: the keyword plus the drop's date."""
+    """From (url, text) pairs, pick the next upcoming event with the keyword (e.g. Dollar Beers).
+    Tickets can go on sale days before the party, so any upcoming date counts; the soonest wins."""
     keyword = re.compile(re.escape(cfg["event_keyword"]), re.I)
     events = {}
     for href, text in links:
         if keyword.search(text) or keyword.search(href.replace("-", " ")):
             events[href] = events.get(href, "") + " " + text
-    on_date = date_pattern(drop)
-    dated = [h for h, t in events.items() if on_date.search(t) or on_date.search(h.replace("-", " "))]
+    today = drop.date()
+    dated, undated = [], []
+    for href, text in events.items():
+        d = event_date(href.replace("-", " ") + " " + text, today)
+        if d is None:
+            undated.append(href)
+        elif d >= today:
+            dated.append((d, href))
     if dated:
-        return dated[0]
-    # Event names normally include the date; if none do, fall back to the first upcoming one
-    # once the drop has started, so a naming change doesn't make us miss it.
-    if events and datetime.now() >= drop + timedelta(minutes=2):
-        return next(iter(events))
-    return None
+        return min(dated)[1]
+    return undated[0] if undated else None
 
 
 # ---------------------------------------------------------------- Safari mode
@@ -660,6 +676,8 @@ def main():
     s.add_argument("--event-url")
     s.add_argument("--now", action="store_true", help="don't wait for the drop; open it right away")
     s.add_argument("--manual", action="store_true", help="only open the page and alert; you do the clicking")
+    s.add_argument("--day", type=str.lower, choices=DAYS, metavar="DAY",
+                   help="the day tickets go on sale, e.g. friday (default: tuesday and saturday)")
     r = sub.add_parser("auto", help="fully automated mode in a separate Chrome window")
     r.add_argument("--event-url")
     r.add_argument("--quantity", type=int)
@@ -671,6 +689,8 @@ def main():
     args = parser.parse_args()
 
     cfg = load_config(args.config)
+    if getattr(args, "day", None):
+        cfg["drop_days"] = [args.day.lower()]
     if args.cmd == "run":
         if args.event_url:
             cfg["event_url"] = args.event_url
