@@ -51,7 +51,7 @@ TIME_SLOT = re.compile(r"^\s*\d{1,2}:\d{2}\s*(am|pm)?\s*$", re.I)
 UNAVAILABLE = re.compile(r"(sold out|unavailable|sales ended|full)", re.I)
 SIGN_IN = re.compile(r"^\s*(sign in|log in)\s*$", re.I)
 INCREASE = re.compile(r"(increase|add one|plus|\+)", re.I)
-BLOCKED = re.compile(r"(captcha|verify you are human|waiting room|you are (now )?in line)", re.I)
+BLOCKED = re.compile(r"(captcha|verify you are human|unusual activity|waiting room|you are (now )?in line)", re.I)
 
 
 def log(msg):
@@ -215,21 +215,31 @@ def open_options(page, cfg):
         return None
     log("Tickets are live - clicking.")
     buttons = buttons.filter(visible=True)
-    for attempt in range(6):
+    for attempt in range(3):
         try:
             buttons.nth(attempt % max(buttons.count(), 1)).click(timeout=3000)
         except PlaywrightError:
             pass
-        scope = checkout_scope(page, timeout_ms=1500 + 500 * attempt)
+        scope = checkout_scope(page, timeout_ms=2000 + 1500 * attempt)
         if scope is not None:
             return scope
         log("The ticket options didn't open yet - clicking again.")
     return page  # carry on and let the checks below report what's on screen
 
 
+def captcha_on_screen(page):
+    """True if a CAPTCHA challenge, 'unusual activity' notice or queue is showing.
+    (Eventbrite loads hCaptcha invisibly on every page, so only a visible one counts.)"""
+    if page.locator("iframe[src*=captcha], iframe[title*=captcha i]").filter(visible=True).count():
+        return True
+    try:
+        return bool(BLOCKED.search(page.locator("body").inner_text(timeout=2000)))
+    except PlaywrightError:
+        return False
+
+
 def check_blocked(page, cfg):
-    text = page.locator("body").inner_text(timeout=2000)
-    if BLOCKED.search(text) or page.locator("iframe[src*=captcha], iframe[title*=captcha i]").count():
+    if captcha_on_screen(page):
         alert("Action needed", "CAPTCHA or queue on screen - complete it in the browser.", cfg["ntfy_topic"])
         return True
     return False
@@ -333,7 +343,15 @@ def try_buy(page, cfg):
     go = first_visible(scope.get_by_role("button", name=CHECKOUT), timeout=5000)
     if go:
         go.click()
-        alert("Tickets in your cart!", f"{qty} ticket(s) held - pay with Apple Pay in the browser now.", cfg["ntfy_topic"])
+        # Eventbrite may ask you to prove you're human at this point. That's for you to solve.
+        deadline = time.time() + 2
+        while time.time() < deadline and not captcha_on_screen(page):
+            page.wait_for_timeout(250)
+        if captcha_on_screen(page):
+            alert("Solve the CAPTCHA now!", f"{qty} ticket(s) chosen - Eventbrite wants you to verify. "
+                  "Solve it in the browser, then pay with Apple Pay.", cfg["ntfy_topic"])
+        else:
+            alert("Tickets in your cart!", f"{qty} ticket(s) held - pay with Apple Pay in the browser now.", cfg["ntfy_topic"])
     else:
         alert("Tickets selected", f"{qty} ticket(s) chosen - click Checkout in the browser now.", cfg["ntfy_topic"])
     return True
