@@ -1,0 +1,20 @@
+<!doctype html><html><body>
+<div id="dates">
+  <button disabled aria-label="Mon, Sep 28 - Sold out">Mon, Sep 28</button>
+  <button onclick="showTimes()">Tue, Sep 29</button>
+  <button onclick="showTimes()">Wed, Sep 30</button>
+  <button>Close</button>
+</div>
+<div id="step"></div>
+<script>
+  function showTimes() {
+    document.getElementById('dates').remove();
+    document.getElementById('step').innerHTML = '<button onclick="showQty()">10:00 AM</button><button onclick="showQty()">2:00 PM</button>';
+  }
+  function showQty() {
+    document.getElementById('step').innerHTML = `General tour
+      <button aria-label="Increase quantity" onclick="n.textContent=Math.min(+n.textContent+1,2);
+        this.disabled=+n.textContent>=2">+</button><span id="n">0</span>
+      <button onclick="document.title='ORDER qty='+n.textContent">Register</button>`;
+  }
+</script></body></html>

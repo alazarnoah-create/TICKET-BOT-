@@ -10,7 +10,7 @@
   ],
   "drop_time": "18:00",
   "start_early_seconds": 60,
-  "poll_seconds": 2.0,
+  "poll_seconds": 1.0,
   "give_up_minutes": 20,
   "ntfy_topic": ""
 }

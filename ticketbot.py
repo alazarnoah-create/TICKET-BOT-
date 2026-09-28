@@ -24,7 +24,9 @@ from playwright.sync_api import sync_playwright
 HERE = Path(__file__).resolve().parent
 CONFIG_PATH = HERE / "config.json"
 PROFILE_DIR = Path(os.environ.get("TICKETBOT_PROFILE", Path.home() / ".ticketbot" / "browser-profile"))
-SIGNIN_URL = "https://www.eventbrite.com/signin/"
+# Eventbrite's login cookie is deleted when the browser closes, so we save it here and restore it.
+LOGIN_FILE = PROFILE_DIR.parent / "eventbrite-login.json"
+SIGNIN_URL = "https://www.eventbrite.ca/signin/"
 
 DEFAULTS = {
     "organizer_url": "https://www.eventbrite.ca/o/trinity-social-38111092183",
@@ -35,15 +37,23 @@ DEFAULTS = {
     "drop_days": ["tuesday", "saturday"],
     "drop_time": "18:00",
     "start_early_seconds": 60,
-    "poll_seconds": 2.0,
+    "poll_seconds": 1.0,
+    "button_wait_seconds": 8,
     "give_up_minutes": 20,
     "ntfy_topic": "",
 }
 MAX_QUANTITY = 4  # the per-order limit for these events
 DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
 
-GET_TICKETS = re.compile(r"^\s*(get tickets|buy tickets|reserve( a spot)?|register|tickets)\s*$", re.I)
-CHECKOUT = re.compile(r"^\s*(check ?out|register|continue|reserve|place order)\s*$", re.I)
+GET_TICKETS = re.compile(r"^\s*(get tickets|buy tickets|reserve( a spot)?|register|check availability|select (a )?date)", re.I)
+CHECKOUT = re.compile(r"^\s*(check ?out|register|continue|reserve|place order)", re.I)
+# A date or time slot, e.g. "Tue, Sep 29", "September 29", "29", "10:00 AM".
+DATE_OR_TIME = re.compile(
+    r"\b(mon|tue|wed|thu|fri|sat|sun|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\b|\b\d{1,2}:\d{2}\s*(am|pm)?\b",
+    re.I,
+)
+UNAVAILABLE = re.compile(r"(sold out|unavailable|sales ended|full)", re.I)
+SIGN_IN = re.compile(r"^\s*(sign in|log in)\s*$", re.I)
 INCREASE = re.compile(r"(increase|add one|plus|\+)", re.I)
 BLOCKED = re.compile(r"(captcha|verify you are human|waiting room|you are (now )?in line)", re.I)
 
@@ -112,18 +122,37 @@ def wait_until(target):
 
 def open_browser(pw, browser):
     PROFILE_DIR.mkdir(parents=True, exist_ok=True)
-    kwargs = dict(user_data_dir=str(PROFILE_DIR), headless=bool(os.environ.get("TICKETBOT_HEADLESS")), viewport=None)
+    kwargs = dict(
+        user_data_dir=str(PROFILE_DIR),
+        headless=bool(os.environ.get("TICKETBOT_HEADLESS")),
+        viewport=None,
+        chromium_sandbox=sys.platform == "darwin",
+    )
+    ctx = None
     if browser == "chrome":
         try:
             # Real Google Chrome: supports Apple Pay (scan the QR code with your iPhone).
-            return pw.chromium.launch_persistent_context(channel="chrome", **kwargs)
+            ctx = pw.chromium.launch_persistent_context(channel="chrome", **kwargs)
         except PlaywrightError:
             log("Google Chrome not found, falling back to Playwright's Chromium.")
-    return pw.chromium.launch_persistent_context(**kwargs)
+    ctx = ctx or pw.chromium.launch_persistent_context(**kwargs)
+    if LOGIN_FILE.exists():
+        ctx.add_cookies(json.loads(LOGIN_FILE.read_text())["cookies"])
+    return ctx
+
+
+def save_login(ctx):
+    LOGIN_FILE.write_text(json.dumps(ctx.storage_state()))
+    LOGIN_FILE.chmod(0o600)
+
+
+def looks_logged_out(page):
+    return first_visible(page.get_by_role("link", name=SIGN_IN).or_(page.get_by_role("button", name=SIGN_IN))) is not None
 
 
 def first_visible(locator, timeout=0):
-    """Return the first visible, enabled match of a locator, or None."""
+    """Return the first visible, enabled match of a locator, or None. Waits up to timeout ms."""
+    locator = locator.filter(visible=True)
     if timeout:
         try:
             locator.first.wait_for(state="visible", timeout=timeout)
@@ -162,6 +191,30 @@ def check_blocked(page, cfg):
     return False
 
 
+def has_quantity_control(scope):
+    return first_visible(scope.locator("select").or_(scope.get_by_role("button", name=INCREASE))) is not None
+
+
+def pick_nearest_date(scope):
+    """For events with several dates: click the first (soonest) available date or time slot.
+    Returns its label, or None if there is nothing to pick."""
+    options = scope.get_by_role("button").or_(scope.get_by_role("radio")).or_(scope.get_by_role("option"))
+    options = options.filter(visible=True)
+    for i in range(options.count()):
+        opt = options.nth(i)
+        try:
+            label = (opt.get_attribute("aria-label") or opt.inner_text()).strip()
+            if not DATE_OR_TIME.search(label) or UNAVAILABLE.search(label):
+                continue
+            if not opt.is_enabled() or opt.get_attribute("aria-disabled") == "true":
+                continue
+            opt.click()
+            return label.replace("\n", " ")
+        except PlaywrightError:
+            continue
+    return None
+
+
 def set_quantity(scope, cfg):
     """Pick the ticket quantity. Returns the quantity chosen (0 if nothing was found)."""
     want = min(int(cfg["quantity"]), MAX_QUANTITY)
@@ -172,8 +225,9 @@ def set_quantity(scope, cfg):
     else:
         container = scope
 
-    selects = container.locator("select")
-    select = first_visible(selects, timeout=8000)
+    # Wait for either kind of quantity control (dropdown or + button), whichever Eventbrite shows.
+    first_visible(container.locator("select").or_(container.get_by_role("button", name=INCREASE)), timeout=8000)
+    select = first_visible(container.locator("select"))
     if select:
         values = [v for v in select.locator("option").evaluate_all("os => os.map(o => o.value)") if v.isdigit()]
         best = max((int(v) for v in values if int(v) <= want), default=0)
@@ -181,7 +235,7 @@ def set_quantity(scope, cfg):
             select.select_option(str(best))
             return best
 
-    plus = first_visible(container.get_by_role("button", name=INCREASE), timeout=3000)
+    plus = first_visible(container.get_by_role("button", name=INCREASE))
     if plus:
         chosen = 0
         for _ in range(want):
@@ -195,8 +249,10 @@ def set_quantity(scope, cfg):
 
 def try_buy(page, cfg):
     """One attempt at the event page. Returns True once tickets are in checkout."""
-    button = first_visible(page.get_by_role("button", name=GET_TICKETS)) or first_visible(
-        page.get_by_role("link", name=GET_TICKETS)
+    # The button is drawn by JavaScript a moment after the page loads, so give it time to appear.
+    button = first_visible(
+        page.get_by_role("button", name=GET_TICKETS).or_(page.get_by_role("link", name=GET_TICKETS)),
+        timeout=cfg["button_wait_seconds"] * 1000,
     )
     if not button:
         return False
@@ -204,6 +260,19 @@ def try_buy(page, cfg):
     button.click()
 
     scope = checkout_scope(page)
+    # Events with several dates show a date (and maybe time) picker before the quantity.
+    for _ in range(3):
+        if has_quantity_control(scope):
+            break
+        page.wait_for_timeout(700)
+        if has_quantity_control(scope):
+            break
+        picked = pick_nearest_date(scope)
+        if not picked:
+            break
+        log(f"Picked the nearest available date: {picked}")
+        page.wait_for_timeout(500)
+        scope = checkout_scope(page, timeout_ms=5000)
     qty = set_quantity(scope, cfg)
     if not qty:
         alert("Tickets are live!", "Couldn't set the quantity automatically - pick it in the browser NOW.", cfg["ntfy_topic"])
@@ -250,6 +319,17 @@ def find_event(page, cfg, drop):
     return None
 
 
+def visible_buttons(page):
+    """Short list of button labels on the page, to help debug when the ticket button isn't found."""
+    try:
+        names = page.locator("button:visible, a[role=button]:visible").evaluate_all(
+            "els => els.map(e => e.innerText.trim().split('\\n')[0]).filter(t => t && t.length < 40)"
+        )
+    except PlaywrightError:
+        return "?"
+    return ", ".join(dict.fromkeys(names)) or "none"
+
+
 def run(cfg, args):
     if not (cfg["event_url"] or cfg["organizer_url"]):
         sys.exit("Set event_url or organizer_url in config.json (or pass --event-url).")
@@ -278,9 +358,14 @@ def run(cfg, args):
             return 1
         log(f"Event: {event_url}")
         page.goto(event_url, wait_until="domcontentloaded")
+        page.wait_for_timeout(2000)
+        if looks_logged_out(page):
+            alert("Not logged in", "Eventbrite shows Sign in - stop with Ctrl+C and run: bash bot login", cfg["ntfy_topic"])
 
         done = False
+        attempts = 0
         while not done and datetime.now() < give_up:
+            attempts += 1
             try:
                 if check_blocked(page, cfg):
                     input("Press Enter here once you're past it... ")
@@ -288,6 +373,8 @@ def run(cfg, args):
             except PlaywrightError as exc:
                 log(f"Hiccup: {exc.__class__.__name__}: {str(exc).splitlines()[0]}")
             if not done:
+                if attempts % 5 == 1:
+                    log(f"No ticket button yet. Buttons on the page: {visible_buttons(page)}")
                 time.sleep(cfg["poll_seconds"])
                 page.reload(wait_until="domcontentloaded")
 
@@ -305,8 +392,16 @@ def login(args):
         page = ctx.pages[0] if ctx.pages else ctx.new_page()
         page.goto(SIGNIN_URL)
         input("Log in to Eventbrite in the browser window, then press Enter here... ")
+        save_login(ctx)
+        page.goto("https://www.eventbrite.ca/", wait_until="domcontentloaded")
+        page.wait_for_timeout(3000)
+        logged_out = looks_logged_out(page)
         ctx.close()
-    log(f"Saved. Your login lives in {PROFILE_DIR}")
+    if logged_out:
+        log("Hmm, Eventbrite still shows 'Sign in'. Run 'bash bot login' again and make sure you finish logging in.")
+        return 1
+    log(f"Saved. You're logged in (login kept in {LOGIN_FILE.parent}).")
+    return 0
 
 
 def main():
