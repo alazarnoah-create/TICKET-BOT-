@@ -150,6 +150,20 @@ def looks_logged_out(page):
     return first_visible(page.get_by_role("link", name=SIGN_IN).or_(page.get_by_role("button", name=SIGN_IN))) is not None
 
 
+def goto(page, url=None):
+    """Open (or, with no url, reload) a page without waiting for it to fully finish loading.
+    Eventbrite pages keep loading trackers in the background and can take ages to 'finish',
+    but they're usable long before that, so a slow load is fine - we carry on."""
+    try:
+        if url:
+            page.goto(url, wait_until="commit", timeout=30000)
+        else:
+            page.reload(wait_until="commit", timeout=30000)
+        page.wait_for_load_state("domcontentloaded", timeout=15000)
+    except PlaywrightTimeout:
+        log("Page is loading slowly - carrying on anyway.")
+
+
 def first_visible(locator, timeout=0):
     """Return the first visible, enabled match of a locator, or None. Waits up to timeout ms."""
     locator = locator.filter(visible=True)
@@ -295,7 +309,7 @@ def date_pattern(day):
 
 def find_event(page, cfg, drop):
     """Look on the organizer page for this drop's event. Returns its URL or None."""
-    page.goto(cfg["organizer_url"], wait_until="domcontentloaded")
+    goto(page, cfg["organizer_url"])
     page.wait_for_timeout(1500)  # the event list is rendered by JavaScript
     links = page.locator("a[href*='/e/']").evaluate_all(
         """els => els.map(a => [a.href.split('?')[0],
@@ -357,7 +371,7 @@ def run(cfg, args):
             ctx.close()
             return 1
         log(f"Event: {event_url}")
-        page.goto(event_url, wait_until="domcontentloaded")
+        goto(page, event_url)
         page.wait_for_timeout(2000)
         if looks_logged_out(page):
             alert("Not logged in", "Eventbrite shows Sign in - stop with Ctrl+C and run: bash bot login", cfg["ntfy_topic"])
@@ -376,7 +390,10 @@ def run(cfg, args):
                 if attempts % 5 == 1:
                     log(f"No ticket button yet. Buttons on the page: {visible_buttons(page)}")
                 time.sleep(cfg["poll_seconds"])
-                page.reload(wait_until="domcontentloaded")
+                try:
+                    goto(page)
+                except PlaywrightError as exc:
+                    log(f"Reload failed ({str(exc).splitlines()[0]}), retrying.")
 
         if not done:
             alert("No luck", "Tickets never became available in time.", cfg["ntfy_topic"])
@@ -390,10 +407,10 @@ def login(args):
     with sync_playwright() as pw:
         ctx = open_browser(pw, args.browser)
         page = ctx.pages[0] if ctx.pages else ctx.new_page()
-        page.goto(SIGNIN_URL)
+        goto(page, SIGNIN_URL)
         input("Log in to Eventbrite in the browser window, then press Enter here... ")
         save_login(ctx)
-        page.goto("https://www.eventbrite.ca/", wait_until="domcontentloaded")
+        goto(page, "https://www.eventbrite.ca/")
         page.wait_for_timeout(3000)
         logged_out = looks_logged_out(page)
         ctx.close()

@@ -13,6 +13,12 @@ then gets you to the payment step. You confirm with Apple Pay yourself.
 5. It alerts you with a Mac notification, a sound, a spoken alert, and an optional phone push.
    Then you pay with Apple Pay.
 
+The bot uses its own Chrome profile, not your everyday one. It looks empty, like a fresh
+window, but it isn't incognito: once you log in there, it stays logged in. (Chrome doesn't allow
+automation tools to control your main profile.) When you log in, use your **email and password**
+(or Eventbrite's emailed code), not "Continue with Google". Google often blocks sign-ins from
+automated browsers.
+
 It never stores your password. You log in once yourself, and the login is kept in
 `~/.ticketbot/browser-profile` on your Mac.
 
