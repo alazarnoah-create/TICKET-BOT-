@@ -1,0 +1,8 @@
+<!doctype html><html><body>
+<!-- After Check out, a CAPTCHA challenge appears over the ticket options (seen on the real site). -->
+<ul><li>General Admission $1
+  <select id="qty"><option value="0">0</option><option>1</option><option>2</option>
+  <option>3</option><option>4</option></select></li></ul>
+<button onclick="document.title='ORDER qty='+qty.value;
+  document.body.insertAdjacentHTML('beforeend', '<iframe src=hcaptcha-challenge.html width=400 height=300></iframe>')">Check out</button>
+</body></html>

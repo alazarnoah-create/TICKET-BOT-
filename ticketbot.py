@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Eventbrite drop helper for the Tue/Sat 6 PM drop.
 
-`run` (default): at the drop, opens the event in your own Safari and alerts you, so you
-click Get tickets and pay with Apple Pay yourself. No automated clicking.
+`run` (default): at the drop, opens the event in your own logged-in Safari, clicks Get
+tickets, maxes out the quantity and clicks Check out; you pay with Apple Pay (Touch ID).
 
 `auto`: the older fully automated mode in a separate Chrome window (log in with `login`).
 """
@@ -231,12 +231,15 @@ def open_options(page, cfg):
 def captcha_on_screen(page):
     """True if a CAPTCHA challenge, 'unusual activity' notice or queue is showing.
     (Eventbrite loads hCaptcha invisibly on every page, so only a visible one counts.)"""
-    if page.locator("iframe[src*=captcha], iframe[title*=captcha i]").filter(visible=True).count():
-        return True
-    try:
-        return bool(BLOCKED.search(page.locator("body").inner_text(timeout=2000)))
-    except PlaywrightError:
-        return False
+    for frame in page.frames:  # the CAPTCHA can sit inside the ticket options' own frame
+        try:
+            if frame.locator("iframe[src*=captcha], iframe[title*=captcha i]").filter(visible=True).count():
+                return True
+            if BLOCKED.search(frame.locator("body").inner_text(timeout=1000)):
+                return True
+        except PlaywrightError:
+            continue
+    return False
 
 
 def check_blocked(page, cfg):
@@ -411,6 +414,80 @@ def find_event_http(cfg, drop):
     return choose_event(links, cfg, drop)
 
 
+STEP_JS = (HERE / "safari_step.js").read_text()
+
+# Runs JavaScript in Safari's front tab. Needs Safari > Develop > "Allow JavaScript from Apple Events".
+JXA_RUN = """function run(argv) {
+  const safari = Application('Safari');
+  return String(safari.doJavaScript(argv[0], {in: safari.windows[0].currentTab()}));
+}"""
+
+
+class SafariNotAllowed(Exception):
+    pass
+
+
+def safari_js(code):
+    """Run JavaScript in the front Safari tab and return its result as text."""
+    out = subprocess.run(["osascript", "-l", "JavaScript", "-e", JXA_RUN, code],
+                         capture_output=True, text=True, timeout=15)
+    if out.returncode:
+        err = out.stderr.strip()
+        if "Allow JavaScript from Apple Events" in err or "-1743" in err or "not allowed" in err.lower():
+            raise SafariNotAllowed(err)
+        raise RuntimeError(err or "osascript failed")
+    return out.stdout.strip()
+
+
+def safari_auto(cfg, run_js, reload, give_up):
+    """Drive the open event page: click Get tickets, max out the quantity, click Check out.
+    run_js runs JavaScript in the page; reload refreshes it. Returns True once at checkout."""
+    want = str(min(int(cfg["quantity"]), MAX_QUANTITY))
+    step = STEP_JS.replace("__WANT__", want).replace("__CAPTCHA_ONLY__", "false")
+    captcha_check = STEP_JS.replace("__WANT__", want).replace("__CAPTCHA_ONLY__", "true")
+    last, since, captcha_alerted = None, time.time(), False
+    while datetime.now() < give_up:
+        try:
+            status = run_js(step)
+        except (RuntimeError, subprocess.TimeoutExpired) as exc:
+            status = f"error: {str(exc).splitlines()[0] if str(exc) else exc}"
+        if status != last:
+            log(f"Safari: {status}")
+            last, since = status, time.time()
+        if status.startswith("checkout:"):
+            qty = status.split(":")[1]
+            # Eventbrite may ask you to prove you're human right after Check out. That's for you to solve.
+            captcha, deadline = False, time.time() + 2.5
+            while not captcha and time.time() < deadline:
+                time.sleep(0.3)
+                try:
+                    captcha = run_js(captcha_check) == "captcha"
+                except (RuntimeError, subprocess.TimeoutExpired):
+                    pass
+            if captcha:
+                alert("Solve the CAPTCHA now!", f"{qty} ticket(s) chosen - solve the CAPTCHA in Safari, "
+                      "then pay with Apple Pay.", cfg["ntfy_topic"])
+            else:
+                alert("Tickets in your cart!", f"{qty} ticket(s) - pay with Apple Pay in Safari now (Touch ID).", cfg["ntfy_topic"])
+            return True
+        if status == "captcha":
+            if not captcha_alerted:
+                alert("Solve the CAPTCHA now!", "Eventbrite wants you to verify - solve it in Safari. "
+                      "The bot carries on after.", cfg["ntfy_topic"])
+                captcha_alerted = True
+        elif status in ("no-button", "") or status.startswith("error"):
+            # Not on sale yet: give the page a few seconds to draw the button, then refresh.
+            if time.time() - since > cfg["button_wait_seconds"]:
+                reload()
+                last = None
+        elif status == "no-checkout" and time.time() - since > 10:
+            alert("Tickets selected", "Click Check out in Safari now, then pay with Apple Pay.", cfg["ntfy_topic"])
+            return True
+        time.sleep(0.3)
+    alert("No luck", "Tickets never became available in time.", cfg["ntfy_topic"])
+    return False
+
+
 def open_in_safari(url):
     log(f"Opening in Safari: {url}")
     if sys.platform == "darwin":
@@ -420,7 +497,7 @@ def open_in_safari(url):
 def safari(cfg, args):
     """Open the event in your own Safari right at the drop and alert you to buy."""
     drop = datetime.now() if args.now else next_drop(cfg)
-    log(f"Target drop: {drop:%A %d %b %H:%M}. Safari will open the event then - you buy it.")
+    log(f"Target drop: {drop:%A %d %b %H:%M}. Safari will open the event then and grab your tickets.")
     heads_up = drop - timedelta(minutes=2)
 
     wait_until(heads_up)
@@ -436,7 +513,19 @@ def safari(cfg, args):
         url = find_event_http(cfg, drop)
         if not url:
             time.sleep(5)
-    if url:
+    if url and not args.manual:
+        open_in_safari(url)
+        time.sleep(1.5)
+        give_up = datetime.now() + timedelta(minutes=cfg["give_up_minutes"])
+        try:
+            safari_auto(cfg, safari_js, lambda: safari_js("location.reload(); 'ok'"), give_up)
+        except SafariNotAllowed:
+            alert("GO NOW - buy it yourself!", "The bot isn't allowed to click in Safari yet (see Terminal). "
+                  "Click Get tickets, choose 4, Check out, Apple Pay.", cfg["ntfy_topic"])
+            log("To let the bot click for you next time: Safari > Settings > Advanced > tick "
+                "'Show features for web developers', then in the Develop menu tick "
+                "'Allow JavaScript from Apple Events'.")
+    elif url:
         open_in_safari(url)
         alert("GO NOW!", "Click Get tickets, choose 4, Check out, pay with Apple Pay. "
               "No Get tickets button? Press Cmd+R.", cfg["ntfy_topic"])
@@ -543,6 +632,7 @@ def main():
     s = sub.add_parser("run", help="at the drop, open the event in Safari and alert you")
     s.add_argument("--event-url")
     s.add_argument("--now", action="store_true", help="don't wait for the drop; open it right away")
+    s.add_argument("--manual", action="store_true", help="only open the page and alert; you do the clicking")
     r = sub.add_parser("auto", help="fully automated mode in a separate Chrome window")
     r.add_argument("--event-url")
     r.add_argument("--quantity", type=int)

@@ -1,0 +1,17 @@
+<!doctype html><html><body>
+<!-- Single-date event like Trinity's: Get tickets opens an in-page popup with a +/- counter.
+     The first click lands before the page is ready and does nothing (seen on the real site). -->
+<h1>Trinity Golf and Country Club</h1><p>Thu, Oct 1 - 10 PM</p><div id="cta"></div><div id="modal"></div>
+<script>
+  const t0 = +(sessionStorage.t0 ||= Date.now());
+  setTimeout(() => {
+    if (Date.now() - t0 < 4000) { cta.innerHTML = '<p>Sales start at 6:00 PM</p>'; return; }
+    cta.innerHTML = '<button id="buy">Get tickets</button>';
+    let clicks = 0;
+    buy.onclick = () => { if (++clicks > 1) modal.innerHTML = `<div class="eds-modal"><h2>Tickets</h2>
+      General Admission $11.98
+      <button aria-label="Decrease quantity">-</button><span id="n">0</span>
+      <button aria-label="Increase quantity" onclick="n.textContent=Math.min(+n.textContent+1,4)">+</button>
+      <button onclick="document.title='ORDER qty='+n.textContent">Check out</button></div>`; };
+  }, 1200);
+</script></body></html>

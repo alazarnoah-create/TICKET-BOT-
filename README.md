@@ -1,7 +1,7 @@
 # Trinity Dollar Beer ticket bot
 
-Gets you onto the Dollar Beers ticket page in **your own Safari** the second the Tuesday/Saturday
-6 PM drop opens, and sets off an alert so you can grab 4 tickets and pay with Apple Pay.
+Grabs Dollar Beers tickets in **your own Safari** the second the Tuesday/Saturday 6 PM drop opens:
+it clicks Get tickets, maxes out the order at 4, clicks Check out, and alerts you to pay with Apple Pay.
 
 **What it does**
 
@@ -10,17 +10,24 @@ Gets you onto the Dollar Beers ticket page in **your own Safari** the second the
    [Trinity Social organizer page](https://www.eventbrite.ca/o/trinity-social-38111092183)
    (the "Dollar Beers" event with the drop's date in its name), opens it in Safari, and alerts you
    so you can check you're logged in.
-3. **At 6:00 PM on the dot:** opens the event again, fresh, and alerts you: **GO NOW!**
-4. **You** click **Get tickets**, pick **4**, **Check out**, and pay with **Apple Pay** (Touch ID).
+3. **At 6:00 PM on the dot:** opens the event fresh in Safari, refreshes until tickets are on sale,
+   clicks **Get tickets**, picks **4** (skipping sold-out ticket types and topping up from the next
+   one if needed), and clicks **Check out**.
+4. Alerts you: **Tickets in your cart!** You pay with **Apple Pay** (Touch ID). Apple requires you to
+   approve every payment yourself, so the bot can't do that step.
 
-You do the clicking in your normal, logged-in Safari, so Eventbrite sees a real person buying.
-That's what avoids the "unusual activity" blocks the automated clicking triggered.
+If Eventbrite shows a CAPTCHA, the bot alerts **Solve the CAPTCHA now!** Solve it in Safari, then pay.
 
 ## One-time setup (Mac)
 
 1. In **Safari**, go to eventbrite.ca and **log in**.
 2. Make sure Apple Pay works in Safari: **System Settings → Wallet & Apple Pay** should have a card.
-3. In Terminal, point it at this folder (type `cd `, drag the folder in, press Enter), then run:
+3. Let the bot click in Safari (one time):
+   - Safari menu → **Settings…** → **Advanced** → tick **Show features for web developers**.
+   - Close Settings. A **Develop** menu appears at the top. Click it and tick
+     **Allow JavaScript from Apple Events**.
+   - The first time the bot runs, macOS asks whether **Terminal** may control **Safari**. Click **OK**.
+4. In Terminal, point it at this folder (type `cd `, drag the folder in, press Enter), then run:
    ```bash
    bash setup.sh
    ```
@@ -34,14 +41,16 @@ this any time before 6 PM:
 bash bot run
 ```
 
-Leave it running. When **GO NOW!** goes off, click **Get tickets → 4 → Check out → Apple Pay**.
-If the Get tickets button isn't there yet, press **Cmd + R** to refresh.
+Leave it running, and don't use Safari while it works. When **Tickets in your cart!** goes off,
+pay with Apple Pay. If the bot can't click (the Safari setting above is off), it alerts
+**GO NOW - buy it yourself!** and you click through by hand.
 
 Other commands:
 
 - `bash bot next`: shows when the next drop is.
 - `bash bot test-alert`: checks the alert and sound work.
-- `bash bot run --now --event-url "https://www.eventbrite.ca/e/..."`: opens a specific event right away (practice).
+- `bash bot run --now --event-url "https://www.eventbrite.ca/e/..."`: runs on a specific event right away (practice; don't pay).
+- `bash bot run --manual`: only opens the event and alerts you; you do all the clicking.
 
 ## Optional: phone alert
 
