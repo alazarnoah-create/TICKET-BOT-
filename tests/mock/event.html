@@ -1,0 +1,19 @@
+<!doctype html><html><body>
+<h1>Dollar Beer Night</h1>
+<div id="cta"></div>
+<script>
+  // Tickets go live LIVE_AFTER ms after the first page load (persisted across reloads).
+  const LIVE_AFTER = 5000;
+  const t0 = +(sessionStorage.t0 ||= Date.now());
+  const cta = document.getElementById('cta');
+  if (Date.now() - t0 < LIVE_AFTER) {
+    cta.innerHTML = '<p>Sales start at 6:00 PM</p>';
+  } else {
+    cta.innerHTML = '<button id="buy">Get tickets</button>';
+    document.getElementById('buy').onclick = () => {
+      const f = document.createElement('iframe');
+      f.src = 'checkout.html'; f.width = 600; f.height = 400;
+      document.body.appendChild(f);
+    };
+  }
+</script></body></html>
