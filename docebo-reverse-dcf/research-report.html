@@ -98,6 +98,8 @@ li { margin: .35rem 0; }
 .cert h3 { margin: 0 0 6px; font-size: 1rem; }
 .sig { font: italic 600 1.35rem/1.2 var(--display); margin-top: 10px; }
 .pagefoot { margin-top: 1.4rem; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 18px; font-size: .75rem; color: var(--muted); border-top: 2px solid var(--ink); padding-top: 10px; }
+.textt th, .textt td { text-align: left !important; font-family: var(--body) !important; white-space: normal !important; }
+.textt td:first-child { min-width: 9rem; }
 </style>
 
 <header class="band">
@@ -118,8 +120,8 @@ li { margin: .35rem 0; }
 
 <main class="wrap">
   <div class="kicker">Docebo Inc. · TSX: DCBO · Reverse DCF</div>
-  <h1>The market is betting Docebo loses a quarter of its revenue every year</h1>
-  <p class="sub">At C$33.22, Docebo's share price only makes sense if about 24.5% of its recurring revenue cancels each year. The company's reported 99% net revenue retention points to about 9%.</p>
+  <h1>The market is pricing Docebo as if its customers are quietly leaving</h1>
+  <p class="sub">At C$33.22, Docebo's share price only makes sense if existing customers pay about 10% less every year: a net revenue retention of 90%. Docebo reports 99%.</p>
   <div class="byline">
     <div><span class="l">Analyst</span><span class="v">Noah Alazar</span></div>
     <div><span class="l">Contact</span><span class="v">alazarnoah@gmail.com</span></div>
@@ -129,37 +131,37 @@ li { margin: .35rem 0; }
 
   <div class="opener">
     <ul class="takeaways">
-      <li><strong>The hidden bet: 24.5% annual churn.</strong> We rebuilt Docebo's business as a 10-year ARR model and solved for the churn rate that matches today's price. That is 2.7× the ~9% implied by the company's own retention figure.</li>
-      <li><strong>The price assumes no new customers.</strong> If Docebo never signed another new customer and only kept its current base at reported retention, our model still values the stock at C$35.41, above the market price.</li>
-      <li><strong>At reported churn, the model value is C$69.83.</strong> That uses a 10% discount rate. Across 8–12% discount rates, the value at reported churn ranges from C$53 to C$99.</li>
-      <li><strong>What would make the market right:</strong> AI replacing corporate training software, more large customers leaving after AWS, or margins falling back. The deciding number to watch is net revenue retention in the Q3-2026 results (early November).</li>
+      <li><strong>The hidden bet: 90.3% retention vs 99% reported.</strong> We rebuilt Docebo as a 10-year recurring-revenue model using only reported figures, then solved for the net revenue retention (NRR) that matches today's price. It implies existing customers shrink their spending by about 9.7% a year. Docebo reports a 1% decline.</li>
+      <li><strong>The price also leaves almost no room for new sales.</strong> Holding retention at the reported 99%, the price implies about US$2M a year of new-customer ARR. Docebo added about US$24M in the last 12 months.</li>
+      <li><strong>At reported numbers the model gives C$53.53 (+61%).</strong> That uses management's own 24% margin target and a 10% discount rate. Across discount rates of 8–12%, the value ranges from C$41 to C$75.</li>
+      <li><strong>The company has real red flags.</strong> A US$70M buyback that almost nobody sold into, a debt-funded acquisition that flatters growth, a 63.7% controlling shareholder, and "adjusted" profit that excludes recurring severance costs. Section 5 lists them with sources.</li>
     </ul>
     <aside class="keydata" aria-label="Key data">
       <h3>Key data</h3>
       <div class="kv">
         <span>Share price (TSX)</span><span>C$33.22</span>
-        <span>Model value (base)</span><span>C$69.83</span>
-        <span>Implied upside</span><span>+110%</span>
+        <span>Model value (base)</span><span>C$53.53</span>
+        <span>Implied upside</span><span>+61%</span>
         <span class="sep"></span><span class="sep"></span>
-        <span>Shares outstanding</span><span>24.95M</span>
+        <span>Shares outstanding</span><span>24.96M</span>
         <span>Market cap</span><span>C$829M</span>
-        <span>Net debt</span><span>US$42M</span>
-        <span>Enterprise value</span><span>US$630M</span>
+        <span>Net debt</span><span>US$44.8M</span>
+        <span>Enterprise value</span><span>US$637M</span>
         <span class="sep"></span><span class="sep"></span>
         <span>ARR (Jun-26)</span><span>US$255.1M</span>
         <span>ARR growth</span><span>9.5%</span>
         <span>Gross margin</span><span>79.4%</span>
         <span>LTM free cash flow</span><span>US$48.7M</span>
         <span>EV / ARR</span><span>2.5×</span>
-        <span>EV / LTM FCF</span><span>12.9×</span>
+        <span>EV / LTM FCF</span><span>13.1×</span>
       </div>
       <div class="view">Market-implied view: pessimistic</div>
     </aside>
   </div>
 
   <h2>1. Company overview</h2>
-  <p>Docebo sells a cloud learning platform that companies use to train employees, customers and partners. Revenue is almost entirely subscription-based (93% in Q2-2026), so annual recurring revenue (ARR) is the best measure of the business. The company is headquartered in Toronto, was founded in Italy, reports in US dollars, and is listed on the TSX and Nasdaq. Intercap owns about 64% of the shares.</p>
-  <p>Growth has slowed from about 18% in 2024 to 9.5% today. Two partner relationships are winding down: AWS (Amazon), Docebo's largest OEM customer at 6.2% of ARR in Sep-2025, and Dayforce. Management says underlying growth excluding these is about 14%, and that ARR growth re-accelerated in both Q1 and Q2 2026. Meanwhile profitability has improved: adjusted EBITDA margin was 16.4% in Q2-2026, with Q3 guidance implying about 23%.</p>
+  <p>Docebo sells a cloud learning platform that companies use to train employees, customers and partners. Subscription revenue was 94% of total revenue in Q3-2025 and Q4-2025. The company is headquartered in Toronto, reports in US dollars, and is listed on the TSX and Nasdaq. Intercap owns 63.7% of the shares.</p>
+  <p>ARR growth slowed from 17.8% in Q3-2024 to 8.4% in Q4-2025, then recovered to 9.5% in Q2-2026. The 2026 figure includes ARR from 365Talents, a French company Docebo bought in January 2026. Its largest OEM customer fell from 9.4% of ARR in March 2025 to 2.5% in June 2026; management says the AWS churn is complete and Dayforce is winding down. Over the same period profitability improved: adjusted EBITDA margin rose to 18.5% over the last twelve months.</p>
 
   <div class="exhibit">
     <div class="cap"><b>Exhibit 1</b> · ARR and free cash flow by quarter (US$M)</div>
@@ -167,97 +169,94 @@ li { margin: .35rem 0; }
       <div class="chart" id="c-arr" aria-label="ARR by quarter bar chart"></div>
       <div class="chart" id="c-fcf" aria-label="Free cash flow by quarter bar chart"></div>
     </div>
-    <div class="foot">ARR grows steadily. FCF is lumpy (Q1-26 includes customer prepayments), so we value off the last-twelve-months total of US$48.7M. Source: company releases.</div>
+    <div class="foot">Source: each quarter's Docebo press release (Q3-2024 to Q2-2026). FCF swings with billing timing: Q1-26 was 42% of revenue, Q2-26 was 4.5%.</div>
   </div>
 
-  <h2>2. Method: running the model backwards</h2>
-  <p>A normal DCF picks assumptions and produces a share price. A reverse DCF starts from the share price and solves for the assumption the market must be using. We solve for churn because, for a subscription business, retention drives the value more than anything else. We work at the customer-dollar level instead of on a single growth rate.</p>
-  <div class="eq">① Ending ARR  = Starting ARR + New ARR + Expansion − Churn
-② Revenue     = average(Starting ARR, Ending ARR) × 1.06   (services on top of ARR)
-③ FCF         = Revenue × EBITDA margin × FCF conversion
+  <h2>2. Method: reported numbers in, market expectation out</h2>
+  <p>A normal DCF picks assumptions and produces a share price. A reverse DCF starts from the price and solves for the assumption the market must hold. We solve for net revenue retention because Docebo reports it and it drives the value of a subscription business more than any other number.</p>
+  <div class="eq">① Ending ARR  = Starting ARR × NRR + New-customer ARR
+② Revenue     = average(Starting ARR, Ending ARR) × 1.061   (LTM revenue ÷ average ARR)
+③ FCF         = Revenue × adj. EBITDA margin × 87.7%        (FY2025 FCF ÷ adj. EBITDA)
 ④ Value today = Σ FCF_t ÷ (1 + r)^t  +  [FCF_10 × (1 + g) ÷ (r − g)] ÷ (1 + r)^10
 ⑤ Price       = (Enterprise value + cash − debt) ÷ shares × USD/CAD
-⑥ Solve:       Price(churn) = C$33.22   →   churn = 24.5%</div>
-  <p>"Reported churn" isn't disclosed directly, so we derive it from net revenue retention (NRR): churn = expansion + (1 − NRR) = 8% + (1 − 99%) = 9%. All other inputs stay fixed at values anchored to reported numbers. Only churn moves.</p>
+⑥ Solve:       Price(NRR) = C$33.22   →   NRR = 90.3%</div>
+  <p><strong>No analyst guesses.</strong> Every input is reported by Docebo, calculated from reported numbers, taken from management's own long-term target, or a stated market convention (10% discount rate, 2.5% terminal growth). New-customer ARR and the FCF conversion rate are held flat at their actual levels. The appendix lists each input and its source.</p>
 
   <div class="exhibit">
-    <div class="cap"><b>Exhibit 2</b> · Base-case forecast at reported churn (US$M)</div>
+    <div class="cap"><b>Exhibit 2</b> · Base-case forecast at reported NRR of 99% (US$M)</div>
     <div class="tablewrap">
       <table>
         <thead><tr><th>Year</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th><th>10</th></tr></thead>
         <tbody>
-          <tr><td>Starting ARR</td><td>255.1</td><td>278.9</td><td>304.5</td><td>331.7</td><td>360.5</td><td>390.8</td><td>422.5</td><td>455.4</td><td>489.3</td><td>524.1</td></tr>
-          <tr><td>+ New-customer ARR</td><td>26.4</td><td>28.3</td><td>30.3</td><td>32.1</td><td>33.9</td><td>35.6</td><td>37.1</td><td>38.5</td><td>39.7</td><td>40.7</td></tr>
-          <tr><td>+ Expansion (8%)</td><td>20.4</td><td>22.3</td><td>24.4</td><td>26.5</td><td>28.8</td><td>31.3</td><td>33.8</td><td>36.4</td><td>39.1</td><td>41.9</td></tr>
-          <tr><td>− Churn (9%)</td><td>(23.0)</td><td>(25.1)</td><td>(27.4)</td><td>(29.9)</td><td>(32.4)</td><td>(35.2)</td><td>(38.0)</td><td>(41.0)</td><td>(44.0)</td><td>(47.2)</td></tr>
-          <tr class="total"><td>Ending ARR</td><td>278.9</td><td>304.5</td><td>331.7</td><td>360.5</td><td>390.8</td><td>422.5</td><td>455.4</td><td>489.3</td><td>524.1</td><td>559.6</td></tr>
-          <tr><td>Revenue</td><td>283.5</td><td>309.7</td><td>337.7</td><td>367.4</td><td>398.8</td><td>431.7</td><td>466.0</td><td>501.5</td><td>538.0</td><td>575.3</td></tr>
-          <tr><td>EBITDA margin</td><td>20.5%</td><td>22.3%</td><td>24.2%</td><td>26.1%</td><td>28.0%</td><td>28.0%</td><td>28.0%</td><td>28.0%</td><td>28.0%</td><td>28.0%</td></tr>
-          <tr><td>Adjusted EBITDA</td><td>58.0</td><td>69.2</td><td>81.8</td><td>95.9</td><td>111.7</td><td>120.9</td><td>130.5</td><td>140.4</td><td>150.6</td><td>161.1</td></tr>
-          <tr class="total"><td>Free cash flow</td><td>56.8</td><td>65.5</td><td>74.9</td><td>84.7</td><td>94.9</td><td>102.7</td><td>110.9</td><td>119.3</td><td>128.0</td><td>136.9</td></tr>
-          <tr><td>Present value at 10%</td><td>51.7</td><td>54.2</td><td>56.2</td><td>57.8</td><td>58.9</td><td>58.0</td><td>56.9</td><td>55.7</td><td>54.3</td><td>52.8</td></tr>
+          <tr><td>Starting ARR</td><td>255.1</td><td>276.9</td><td>298.4</td><td>319.8</td><td>340.9</td><td>361.8</td><td>382.6</td><td>403.1</td><td>423.4</td><td>443.5</td></tr>
+          <tr><td>+ New-customer ARR</td><td>24.3</td><td>24.3</td><td>24.3</td><td>24.3</td><td>24.3</td><td>24.3</td><td>24.3</td><td>24.3</td><td>24.3</td><td>24.3</td></tr>
+          <tr><td>− Existing customers (NRR 99%)</td><td>(2.6)</td><td>(2.8)</td><td>(3.0)</td><td>(3.2)</td><td>(3.4)</td><td>(3.6)</td><td>(3.8)</td><td>(4.0)</td><td>(4.2)</td><td>(4.4)</td></tr>
+          <tr class="total"><td>Ending ARR</td><td>276.9</td><td>298.4</td><td>319.8</td><td>340.9</td><td>361.8</td><td>382.6</td><td>403.1</td><td>423.4</td><td>443.5</td><td>463.4</td></tr>
+          <tr><td>Revenue</td><td>282.1</td><td>305.1</td><td>327.9</td><td>350.4</td><td>372.7</td><td>394.8</td><td>416.6</td><td>438.3</td><td>459.7</td><td>480.9</td></tr>
+          <tr><td>Adj. EBITDA margin</td><td>21.3%</td><td>24.0%</td><td>24.0%</td><td>24.0%</td><td>24.0%</td><td>24.0%</td><td>24.0%</td><td>24.0%</td><td>24.0%</td><td>24.0%</td></tr>
+          <tr><td>Adjusted EBITDA</td><td>60.0</td><td>73.2</td><td>78.7</td><td>84.1</td><td>89.4</td><td>94.7</td><td>100.0</td><td>105.2</td><td>110.3</td><td>115.4</td></tr>
+          <tr class="total"><td>Free cash flow</td><td>52.6</td><td>64.2</td><td>69.0</td><td>73.7</td><td>78.4</td><td>83.1</td><td>87.7</td><td>92.2</td><td>96.7</td><td>101.2</td></tr>
+          <tr><td>Present value at 10%</td><td>47.8</td><td>53.1</td><td>51.8</td><td>50.4</td><td>48.7</td><td>46.9</td><td>45.0</td><td>43.0</td><td>41.0</td><td>39.0</td></tr>
         </tbody>
       </table>
     </div>
+    <div class="foot">New-customer ARR is held flat at the last-12-months level (US$24.3M), with no growth assumed. That figure includes some acquired 365Talents ARR, which Docebo does not break out.</div>
   </div>
 
   <div class="exhibit">
     <div class="cap"><b>Exhibit 3</b> · From cash flows to value per share</div>
     <div class="tablewrap">
-      <table style="max-width: 32rem">
+      <table style="max-width: 34rem">
         <tbody>
-          <tr><td>Sum of PV of free cash flow, Years 1–10</td><td>556.5</td></tr>
-          <tr><td>PV of terminal value (2.5% growth)</td><td>721.4</td></tr>
-          <tr class="total"><td>Enterprise value (US$M)</td><td>1,277.9</td></tr>
-          <tr><td>+ Cash / − Debt</td><td>45.7 / (88.0)</td></tr>
-          <tr class="total"><td>Equity value (US$M)</td><td>1,235.6</td></tr>
-          <tr><td>÷ Shares (M) → US$ per share</td><td>24.95 → 49.52</td></tr>
-          <tr class="hl total"><td>Value per share (C$, at 1.41)</td><td>69.83</td></tr>
-          <tr><td>Terminal value share of EV</td><td>56%</td></tr>
+          <tr><td>Sum of PV of free cash flow, Years 1–10</td><td>466.6</td></tr>
+          <tr><td>PV of terminal value (2.5% growth)</td><td>533.2</td></tr>
+          <tr class="total"><td>Enterprise value (US$M)</td><td>999.8</td></tr>
+          <tr><td>+ Cash after buyback / − Debt</td><td>43.2 / (88.0)</td></tr>
+          <tr class="total"><td>Equity value (US$M)</td><td>955.0</td></tr>
+          <tr><td>÷ Shares (M) → US$ per share</td><td>24.96 → 38.26</td></tr>
+          <tr class="hl total"><td>Value per share (C$, at 1.3991)</td><td>53.53</td></tr>
+          <tr><td>Terminal value share of EV</td><td>53%</td></tr>
         </tbody>
       </table>
     </div>
   </div>
 
   <h2>3. The finding: four ways to read C$33.22</h2>
-  <p>Solving for churn is our main lens. The same price can be read through any single lever, holding the others at base case. Each reading tells the same story: the market is assuming something far worse than the reported numbers.</p>
+  <p>Retention is the main lens, but the same price can be read through any single lever with the others held at reported levels. Each reading says the same thing: the market expects much worse than Docebo is reporting.</p>
   <div class="exhibit">
     <div class="cap"><b>Exhibit 4</b> · What today's price requires, one lever at a time</div>
     <div class="tablewrap">
       <table>
-        <thead><tr><th>Lever</th><th>Reported / base case</th><th>Needed to justify C$33.22</th></tr></thead>
+        <thead><tr><th>Lever</th><th>Reported / company figure</th><th>Needed to justify C$33.22</th></tr></thead>
         <tbody>
-          <tr class="hl"><td><strong>Annual ARR churn</strong></td><td>9.0%</td><td class="bad">24.5%</td></tr>
-          <tr><td>Net revenue retention (same thing, other way)</td><td>99%</td><td class="bad">83%</td></tr>
-          <tr><td>Long-term EBITDA margin</td><td>28% (today 18.6%)</td><td class="bad">12.7%, forever</td></tr>
-          <tr><td>New-customer ARR</td><td>US$24M/yr, growing</td><td class="bad">~zero, forever</td></tr>
-          <tr><td>Required return (discount rate)</td><td>10%</td><td class="bad">16.5%</td></tr>
+          <tr class="hl"><td><strong>Net revenue retention</strong></td><td>99% (FY2025)</td><td class="bad">90.3%</td></tr>
+          <tr><td>New-customer ARR per year</td><td>US$24.3M (last 12 months)</td><td class="bad">about US$2.2M</td></tr>
+          <tr><td>Long-term adj. EBITDA margin</td><td>18.5% today, 24% target</td><td class="bad">15.1%, forever</td></tr>
+          <tr><td>Required return (discount rate)</td><td>10% (CAPM cross-check ≈ 9%)</td><td class="bad">13.9%</td></tr>
         </tbody>
       </table>
     </div>
-    <div class="foot">Solved with the same model as Exhibit 2, one lever at a time.</div>
+    <div class="foot">Solved with the model in Exhibits 2–3, changing one lever at a time. CAPM: Canada 10-year yield 3.99% + beta 1.0 × 5% premium.</div>
   </div>
   <div class="callout">
-    <div class="big">Even with zero new customers ever, the model gives C$35.41 per share. That's above today's price.</div>
-    <p style="margin-bottom:0">In other words, the market is paying for Docebo's existing customer base only, and even then at a discount. It is pricing in no value at all for future sales.</p>
+    <div class="big">You don't even need management's margin target. At today's 18.5% margin, held forever, the model gives C$40.96, still 23% above the price.</div>
+    <p style="margin-bottom:0">The limit of the argument: if Docebo never signed another new customer, the model gives C$31.24, just below the price. So the market does price in some new sales, but only about a tenth of the current pace.</p>
   </div>
 
   <h2>4. Sensitivity</h2>
   <div class="exhibit">
-    <div class="cap"><b>Exhibit 5</b> · Value per share (C$): churn × discount rate</div>
+    <div class="cap"><b>Exhibit 5</b> · Value per share (C$): net revenue retention × discount rate</div>
     <div class="tablewrap">
       <table class="grid">
-        <thead><tr><th>Churn ↓ / Discount →</th><th>8%</th><th>9%</th><th>10%</th><th>11%</th><th>12%</th></tr></thead>
+        <thead><tr><th>NRR ↓ / Discount →</th><th>8%</th><th>9%</th><th>10%</th><th>11%</th><th>12%</th></tr></thead>
         <tbody>
-          <tr><td>5.0%</td><td class="up">124.62</td><td class="up">102.78</td><td class="up">86.88</td><td class="up">74.82</td><td class="up">65.39</td></tr>
-          <tr><td>7.5%</td><td class="up">107.97</td><td class="up">89.31</td><td class="up">75.71</td><td class="up">65.38</td><td class="up">57.29</td></tr>
-          <tr><td><strong>9.0% (reported)</strong></td><td class="up">99.24</td><td class="up">82.23</td><td class="up"><strong>69.83</strong></td><td class="up">60.40</td><td class="up">53.01</td></tr>
-          <tr><td>10.0%</td><td class="up">93.89</td><td class="up">77.89</td><td class="up">66.21</td><td class="up">57.34</td><td class="up">50.37</td></tr>
-          <tr><td>12.5%</td><td class="up">81.97</td><td class="up">68.20</td><td class="up">58.14</td><td class="up">50.48</td><td class="up">44.46</td></tr>
-          <tr><td>15.0%</td><td class="up">71.90</td><td class="up">59.99</td><td class="up">51.28</td><td class="up">44.63</td><td class="up">39.41</td></tr>
-          <tr><td>20.0%</td><td class="up">56.15</td><td class="up">47.09</td><td class="up">40.45</td><td class="up">35.38</td><td class="dn near">31.37</td></tr>
-          <tr><td>25.0%</td><td class="up">44.80</td><td class="up">37.74</td><td class="dn near">32.55</td><td class="dn">28.58</td><td class="dn">25.43</td></tr>
-          <tr><td>30.0%</td><td class="up near">36.56</td><td class="dn">30.90</td><td class="dn">26.73</td><td class="dn">23.53</td><td class="dn">21.00</td></tr>
+          <tr><td>80%</td><td class="dn">27.36</td><td class="dn">23.36</td><td class="dn">20.41</td><td class="dn">18.12</td><td class="dn">16.30</td></tr>
+          <tr><td>85%</td><td class="up near">34.69</td><td class="dn">29.47</td><td class="dn">25.61</td><td class="dn">22.64</td><td class="dn">20.28</td></tr>
+          <tr><td>90%</td><td class="up">44.97</td><td class="up">37.95</td><td class="dn near">32.79</td><td class="dn">28.83</td><td class="dn">25.69</td></tr>
+          <tr><td>95%</td><td class="up">59.48</td><td class="up">49.84</td><td class="up">42.77</td><td class="up">37.37</td><td class="dn near">33.11</td></tr>
+          <tr><td><strong>99% (reported)</strong></td><td class="up">75.29</td><td class="up">62.72</td><td class="up"><strong>53.53</strong></td><td class="up">46.53</td><td class="up">41.01</td></tr>
+          <tr><td>101% (ex-AWS)</td><td class="up">85.00</td><td class="up">70.60</td><td class="up">60.09</td><td class="up">52.09</td><td class="up">45.80</td></tr>
+          <tr><td>105%</td><td class="up">108.92</td><td class="up">89.96</td><td class="up">76.15</td><td class="up">65.67</td><td class="up">57.46</td></tr>
         </tbody>
       </table>
     </div>
@@ -265,87 +264,80 @@ li { margin: .35rem 0; }
   </div>
   <div class="cols2">
     <div>
-      <h3>Implied churn at each discount rate</h3>
+      <h3>Implied NRR at each discount rate</h3>
       <div class="tablewrap">
         <table>
           <thead><tr><th>Discount rate</th><th>8%</th><th>9%</th><th>10%</th><th>11%</th><th>12%</th></tr></thead>
-          <tbody><tr><td>Implied churn</td><td>32.6%</td><td>28.1%</td><td>24.5%</td><td>21.4%</td><td>18.7%</td></tr></tbody>
+          <tbody><tr><td>Implied NRR</td><td>84.1%</td><td>87.4%</td><td>90.3%</td><td>92.8%</td><td>95.1%</td></tr></tbody>
         </table>
       </div>
-      <p>Even at a harsh 12%, the market-implied churn is about double what Docebo reports.</p>
+      <p>Even at a harsh 12%, the price needs retention below the reported 99%.</p>
     </div>
     <div>
-      <h3>Other stress tests (at reported churn)</h3>
+      <h3>Stress tests (at reported NRR)</h3>
       <div class="tablewrap">
         <table>
           <tbody>
-            <tr><td>Terminal growth 0% instead of 2.5%</td><td>C$58.89</td></tr>
-            <tr><td>Margin target 20% instead of 28%</td><td>C$50.65</td></tr>
-            <tr><td>No new customers, ever</td><td>C$35.41</td></tr>
+            <tr><td>Margin stays at today's 18.5%</td><td>C$40.96</td></tr>
+            <tr><td>NRR 101% (ex-AWS, now that AWS is gone)</td><td>C$60.09</td></tr>
+            <tr><td>No new customers, ever</td><td>C$31.24</td></tr>
           </tbody>
         </table>
       </div>
-      <p>No single conservative change gets the value down to the market price.</p>
     </div>
   </div>
 
-  <h2>5. Why the market might be right</h2>
-  <div class="cols2">
-    <div>
-      <h3>Risks</h3>
-      <ul>
-        <li><strong>AI disruption.</strong> Generative AI could make course building and delivery a commodity, which would push churn and prices the wrong way across the category.</li>
-        <li><strong>Customer concentration.</strong> The AWS and Dayforce wind-downs show that large partner accounts can leave. Retention of 99% includes some of that drag already.</li>
-        <li><strong>Hidden costs.</strong> Adjusted EBITDA excludes stock-based compensation, so our cash flows are somewhat generous.</li>
-        <li><strong>Ownership structure.</strong> A 64% controlling shareholder and a small free float can keep a lasting discount on the shares.</li>
-      </ul>
-    </div>
-    <div>
-      <h3>What would prove the market wrong</h3>
-      <ul>
-        <li>Net revenue retention holding at 99% or above once AWS is fully out of the base.</li>
-        <li>Continued ARR re-acceleration (two straight quarters so far).</li>
-        <li>EBITDA margin expanding toward the ~23% implied by Q3 guidance.</li>
-        <li>Capital returns: management launched a US$70M share tender (substantial issuer bid) in July 2026.</li>
-      </ul>
+  <h2>5. Red flags: what looks sketchy about Docebo</h2>
+  <p>The model says the stock looks cheap if the reported numbers hold. These facts are reasons a sceptical investor might not trust them, or might demand a discount anyway.</p>
+  <div class="exhibit">
+    <div class="tablewrap">
+      <table class="flags textt">
+        <thead><tr><th>Flag</th><th>The facts</th><th>Source</th></tr></thead>
+        <tbody>
+          <tr><td><strong>A buyback nobody wanted</strong></td><td style="white-space:normal">Announced a US$70M buyback at US$20.40, calling the stock undervalued. Raised the offer to US$25.00. Only 99,332 shares (US$2.48M) were tendered; Intercap tendered 13,351.</td><td style="white-space:normal">Releases of 17 Jul, 21 Aug and 11 Sep 2026</td></tr>
+          <tr><td><strong>Planned to borrow for it</strong></td><td style="white-space:normal">The buyback was to be funded with ~US$10M of cash and a US$60M draw on the credit facility.</td><td style="white-space:normal">Release of 17 Jul 2026</td></tr>
+          <tr><td><strong>Debt went up fast</strong></td><td style="white-space:normal">Credit facility raised from US$50M to US$100M (Feb 2026), then US$150M. Drew ~US$50M on 14 Jan 2026. Borrowings of US$88.0M against cash of US$45.7M at 30 Jun 2026.</td><td style="white-space:normal">Q1/Q2-2026 MD&amp;A; release of 17 Jul 2026</td></tr>
+          <tr><td><strong>Growth partly bought</strong></td><td style="white-space:normal">Bought 365Talents for US$61.3M on 20 Jan 2026, six days after the loan draw. It is expected to add ~US$9M of revenue in 2026. Headline ARR "re-acceleration" includes acquired ARR, which is not broken out.</td><td style="white-space:normal">Acquisition release 20 Jan 2026; release of 21 Apr 2026</td></tr>
+          <tr><td><strong>Controlled company</strong></td><td style="white-space:normal">Intercap owns 63.7% (15.9M shares). Outside shareholders cannot outvote it.</td><td style="white-space:normal">Release of 11 Sep 2026</td></tr>
+          <tr><td><strong>Insiders sold near the top</strong></td><td style="white-space:normal">In 2021 Intercap, founder Claudio Erba and CEO Alessio Artuffo sold shares at C$112.00 and US$49.67. The stock is C$33.22 today.</td><td style="white-space:normal">Secondary offering releases, 2021</td></tr>
+          <tr><td><strong>Biggest customers leaving</strong></td><td style="white-space:normal">Largest OEM customer: 9.4% of ARR (Mar 2025) → 3.2% (Mar 2026) → 2.5% (Jun 2026).</td><td style="white-space:normal">Releases of 21 Apr and 7 Aug 2026</td></tr>
+          <tr><td><strong>"Adjusted" hides real costs</strong></td><td style="white-space:normal">Adjusted EBITDA excludes share-based pay, restructuring and acquisition costs. Severance: US$5.2M in FY2025 and US$6.2M in Q1-2026 alone.</td><td style="white-space:normal">MD&amp;A definitions; FY2025 and Q1-2026 financial statements</td></tr>
+        </tbody>
+      </table>
     </div>
   </div>
+  <p><strong>The strangest one is the buyback.</strong> Management said the shares were undervalued and offered to buy up to US$70M worth, even raising the price to US$25.00. Shareholders kept almost all of their shares. That could mean holders think the stock is worth more than US$25, or that the float is so thin, with 63.7% held by one owner, that few sellers exist. Either way, the plan to borrow up to US$60M for it shows how willing the company is to add debt.</p>
 
   <h2>6. Conclusion and what to watch</h2>
-  <p>Docebo's share price is betting on a sharp deterioration. It needs roughly 24.5% of ARR to disappear every year, or an equally severe drop in margins or new sales. The company's reported figures show nothing close to that today. If retention holds near 99%, the stock looks materially undervalued on our assumptions. If AI disruption shows up in the retention numbers, the market will have been early rather than wrong.</p>
-  <p><strong>Catalyst:</strong> Q3-2026 results (expected early November 2026). We'll re-run the model with the new ARR, retention and price, and log whether the market's implied churn rises or falls.</p>
+  <p>On reported numbers, Docebo's price assumes a sharp deterioration: retention falling from 99% to about 90%, or new sales collapsing to a tenth of today's pace. The company's filings show neither yet. That points to undervaluation, <strong>but</strong> the red flags give real reasons for a discount: debt-funded deals, acquired growth, "adjusted" profit that excludes recurring severance, and a controlling shareholder.</p>
+  <p><strong>Catalyst: Q3-2026 results (early November 2026).</strong> Watch three things: (1) any updated net revenue retention figure, now that AWS has fully churned; (2) organic ARR growth excluding 365Talents; (3) borrowings. We'll re-run the model and log whether implied retention moves toward or away from the reported figure.</p>
 
-  <h2>Appendix: assumptions and sources</h2>
-  <div class="cols2">
-    <div>
-      <ul>
-        <li>Starting ARR US$255.1M (30 Jun 2026). New-customer ARR US$24.4M in the last 12 months, growing 8% and fading to 2.5% by Year 10.</li>
-        <li>Expansion 8% of starting ARR a year (not disclosed, our assumption). Churn 9% (derived).</li>
-        <li>Revenue per $ of average ARR: 1.06 (from the last 12 months).</li>
-        <li>EBITDA margin 18.6% → 28% over 5 years. FCF conversion 101% → 85%.</li>
-        <li>Discount rate 10%, terminal growth 2.5%, USD/CAD 1.41. Year-end discounting.</li>
-      </ul>
-    </div>
-    <div class="src">
-      <p>Figures were compiled from company releases via public news sources. Some quarterly revenue was derived (FCF ÷ FCF margin). Verify against filings on sedarplus.ca.</p>
-      <ul>
-        <li><a href="https://www.theglobeandmail.com/investing/markets/stocks/DCBO-T/pressreleases/3714410/docebo-reports-second-quarter-2026-results/">Q2-2026 results</a></li>
-        <li><a href="https://www.businesswire.com/news/home/20260508578551/en/Docebo-Reports-First-Quarter-2026-Results">Q1-2026 results</a></li>
-        <li><a href="https://www.businesswire.com/news/home/20260227263046/en/Docebo-Reports-Fourth-Quarter-and-Fiscal-Year-2025-Results">Q4 / FY2025 results</a></li>
-        <li><a href="https://www.businesswire.com/news/home/20251107340369/en/Docebo-Reports-Third-Quarter-2025-Results">Q3-2025 results</a></li>
-        <li><a href="https://www.theglobeandmail.com/investing/markets/stocks/DCBO/pressreleases/632787/docebo-earnings-call-bookings-strength-amid-cautious-outlook/">Q4-2025 call: 99% net dollar retention</a></li>
-        <li><a href="https://finance.yahoo.com/markets/stocks/articles/docebo-inc-announces-substantial-issuer-103000376.html">Substantial issuer bid and FY2026 guidance</a></li>
-        <li><a href="https://money.tmx.com/en/quote/DCBO">TMX Money (price)</a></li>
-      </ul>
-    </div>
+  <h2>Appendix: inputs and sources</h2>
+  <div class="tablewrap">
+    <table class="textt">
+      <thead><tr><th>Input</th><th>Value</th><th>Type</th><th>Source</th></tr></thead>
+      <tbody>
+        <tr><td>Quarterly ARR, revenue, adj. EBITDA, FCF</td><td>Exhibit 1</td><td>Reported</td><td style="white-space:normal">Docebo press releases Q3-2024 to Q2-2026 (sec.gov 6-K filings)</td></tr>
+        <tr><td>Net revenue retention</td><td>99% (101% ex-AWS)</td><td>Reported</td><td style="white-space:normal">Q4-2025 earnings call</td></tr>
+        <tr><td>New-customer ARR</td><td>US$24.3M / yr</td><td>Calculated</td><td style="white-space:normal">255.1 − 233.1 + 1% × 233.1, held flat</td></tr>
+        <tr><td>Revenue per $ of ARR</td><td>1.061</td><td>Calculated</td><td style="white-space:normal">LTM revenue 258.9 ÷ average ARR 244.1</td></tr>
+        <tr><td>Adj. EBITDA margin</td><td>18.5% → 24% by 2028</td><td>Reported → company target</td><td style="white-space:normal">LTM actual; management's long-term model (&gt;$80M, 24% by 2028)</td></tr>
+        <tr><td>FCF conversion</td><td>87.7%</td><td>Calculated</td><td style="white-space:normal">FY2025 FCF 38.4 ÷ FY2025 adj. EBITDA 43.8</td></tr>
+        <tr><td>Cash / debt / shares</td><td>43.2 / 88.0 / 24.96M</td><td>Reported</td><td style="white-space:normal">Releases of 17 Jul and 11 Sep 2026</td></tr>
+        <tr><td>Price / USD-CAD</td><td>C$33.22 / 1.3991</td><td>Reported</td><td style="white-space:normal">TSX close and mid-market rate, 17 Sep 2026</td></tr>
+        <tr><td>Discount rate / terminal growth</td><td>10% / 2.5%</td><td>Convention</td><td style="white-space:normal">CAPM cross-check ≈ 9%; ≈ 2% inflation target + real growth</td></tr>
+      </tbody>
+    </table>
   </div>
-  <section class="cert" aria-label="Analyst certification">
+  <p class="src">Figures were compiled from Docebo's press releases and SEC 6-K filings via public news and search sources. Full links for every number are on the Sources tab of Docebo_Reverse_DCF.xlsx.</p>
+
+<section class="cert" aria-label="Analyst certification">
     <h3>Analyst certification</h3>
     <p>I, Noah Alazar, certify that the views expressed in this report accurately reflect my personal views about the subject company and its securities. I have not received and will not receive any compensation for this report. I hold no position in Docebo Inc.</p>
     <div class="sig">Noah Alazar</div>
     <div style="font-size:.8rem;color:var(--muted)">Analyst, Noah Alazar Research · alazarnoah@gmail.com</div>
   </section>
-  <p class="disclaimer"><strong>Important disclosures.</strong> Noah Alazar Research is an independent, non-commercial research project. This report is published for educational purposes only. It is not investment advice or a recommendation to buy or sell any security, and it should not be relied on for investment decisions. Figures are drawn from public company disclosures and news sources; some are derived, as noted in the appendix. Estimates and valuations reflect the analyst's assumptions and may change without notice. Supporting model: Docebo_Reverse_DCF.xlsx.</p>
+  <p class="disclaimer"><strong>Important disclosures.</strong> Noah Alazar Research is an independent, non-commercial research project. This report is published for educational purposes only. It is not investment advice or a recommendation to buy or sell any security, and it should not be relied on for investment decisions. Figures are drawn from public company disclosures; derived figures are formulas on reported numbers, as listed in the appendix. Estimates and valuations reflect the analyst's assumptions and may change without notice. Supporting model: Docebo_Reverse_DCF.xlsx.</p>
   <div class="pagefoot"><span>Noah Alazar Research · Independent Equity Research</span><span>Docebo Inc. (TSX: DCBO) · Report NAR-2026-01</span><span>© 2026 Noah Alazar</span></div>
 </main>
 
@@ -384,7 +376,7 @@ li { margin: .35rem 0; }
       h.addEventListener('mouseleave', function () { tip.hidden = true; });
     });
   }
-  chart('c-arr', 'ARR (US$M)', [214.1, 219.7, 225.1, 233.0, 235.6, 238.1, 248.9, 255.1], 300, 100, function (v) { return v.toFixed(1); });
+  chart('c-arr', 'ARR (US$M)', [214.1, 219.7, 225.1, 233.1, 235.6, 238.1, 248.9, 255.1], 300, 100, function (v) { return v.toFixed(1); });
   chart('c-fcf', 'Free cash flow (US$M)', [4.5, 10.1, 9.0, 11.4, 5.7, 12.3, 27.6, 3.1], 30, 10, function (v) { return v.toFixed(1); });
 })();
 </script>
