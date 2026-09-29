@@ -1,0 +1,355 @@
+<title>Docebo: The Market's Hidden Bet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,700&family=Public+Sans:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: sell-side equity note. Masthead band, then a two-column opener (thesis | key data sidebar), then single-column sections with numbered exhibits. */
+:root {
+  --bg: #ffffff; --panel: #f1f5f7; --ink: #15212a; --muted: #5b6a76; --rule: #d5dee4; --band: #10303a; --band-ink: #eef6f7;
+  --accent: #0f6b74; --accent-soft: #d9ecee; --warn: #b3412e; --warn-soft: #f8e3de; --good-soft: #dcefe0; --grid: #e4eaee;
+  --display: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --body: "Public Sans", "Helvetica Neue", Arial, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0e161b; --panel: #16222a; --ink: #e3ebf0; --muted: #9aabb7; --rule: #2a3a45; --band: #0a2229; --band-ink: #e3f1f3;
+  --accent: #5cc2cc; --accent-soft: #173a3f; --warn: #f08b75; --warn-soft: #3e2420; --good-soft: #1d3524; --grid: #22313a; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0e161b; --panel: #16222a; --ink: #e3ebf0; --muted: #9aabb7; --rule: #2a3a45; --band: #0a2229; --band-ink: #e3f1f3;
+  --accent: #5cc2cc; --accent-soft: #173a3f; --warn: #f08b75; --warn-soft: #3e2420; --good-soft: #1d3524; --grid: #22313a; color-scheme: dark }
+
+body { background: var(--bg); color: var(--ink); font: 15px/1.6 var(--body); }
+.wrap { max-width: 60rem; margin: 0 auto; padding-inline: 18px; padding-block: 0 72px; }
+.band { background: var(--band); color: var(--band-ink); padding-block: 22px; }
+.band .inner { max-width: 60rem; margin: 0 auto; padding-inline: 18px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px 24px; align-items: baseline; }
+.band .firm { font: 600 .74rem/1.3 var(--body); letter-spacing: .14em; text-transform: uppercase; opacity: .85; }
+.band .meta { font: 500 .8rem/1.3 var(--mono); opacity: .85; }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; line-height: 1.2; margin: 0; }
+h1 { font-size: clamp(1.9rem, 5vw, 2.6rem); margin-top: 26px; }
+h2 { font-size: 1.4rem; margin-top: 2.6rem; padding-top: 1rem; border-top: 2px solid var(--ink); }
+h3 { font-size: 1.05rem; margin-top: 1.4rem; }
+p { margin: .7rem 0; }
+.kicker { font: 600 .75rem/1 var(--body); letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin-top: 26px; }
+.sub { font-size: 1.1rem; color: var(--muted); margin-top: .5rem; max-width: 44rem; }
+.num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+.opener { display: grid; grid-template-columns: minmax(0, 1fr) 17rem; gap: 32px; margin-top: 24px; align-items: start; }
+@media (max-width: 760px) { .opener { grid-template-columns: 1fr; } }
+.takeaways { margin: 0; padding: 0; list-style: none; display: grid; gap: 12px; }
+.takeaways li { padding-left: 16px; border-left: 3px solid var(--accent); }
+.takeaways li strong { display: block; }
+aside.keydata { background: var(--panel); border: 1px solid var(--rule); border-radius: 8px; padding: 16px; font-size: .88rem; }
+aside.keydata h3 { margin: 0 0 8px; font-size: .95rem; }
+.kv { display: grid; grid-template-columns: 1fr auto; gap: 5px 12px; }
+.kv span:nth-child(even) { font-family: var(--mono); font-variant-numeric: tabular-nums; text-align: right; }
+.kv .sep { border-top: 1px solid var(--rule); margin: 4px 0; height: 0; }
+.view { margin-top: 12px; padding: 10px 12px; border-radius: 6px; background: var(--warn-soft); font-weight: 700; font-size: .9rem; }
+
+.exhibit { margin-top: 1.4rem; }
+.exhibit .cap { font: 600 .78rem/1.3 var(--body); letter-spacing: .05em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+.exhibit .cap b { color: var(--ink); }
+.exhibit .foot { font-size: .78rem; color: var(--muted); margin-top: 6px; }
+.charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; }
+.chart { position: relative; min-width: 0; }
+.chart svg { width: 100%; height: auto; display: block; }
+.chart text { font: 11px var(--body); fill: var(--muted); }
+.chart .gl { stroke: var(--grid); stroke-width: 1; }
+.chart .bar { fill: var(--accent); }
+.chart .bar.last { fill: var(--ink); }
+.chart .hit { fill: transparent; cursor: default; }
+.chart .endlab { fill: var(--ink); font-weight: 700; }
+.tip { position: absolute; pointer-events: none; background: var(--ink); color: var(--bg); font: 600 .78rem/1.3 var(--body); padding: 5px 8px; border-radius: 5px; white-space: nowrap; transform: translate(-50%, -110%); }
+
+.tablewrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: .88rem; }
+th, td { padding: 7px 9px; border-bottom: 1px solid var(--rule); text-align: right; white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; white-space: normal; }
+thead th { font-size: .72rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 600; border-bottom: 2px solid var(--ink); }
+tbody td { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+tbody td:first-child { font-family: var(--body); }
+tr.total td { font-weight: 700; border-top: 1px solid var(--ink); }
+tr.hl td { background: var(--accent-soft); }
+td.bad { color: var(--warn); font-weight: 700; }
+.grid td { text-align: center; }
+.grid td:first-child { background: var(--panel); text-align: left; }
+.grid td.up { background: var(--good-soft); }
+.grid td.dn { background: var(--warn-soft); }
+.grid td.near { outline: 2px solid var(--ink); outline-offset: -2px; font-weight: 700; }
+
+.callout { background: var(--panel); border: 1px solid var(--rule); border-radius: 8px; padding: 16px 18px; margin-top: 1.2rem; }
+.callout .big { font: 700 1.2rem/1.35 var(--display); }
+.eq { font-family: var(--mono); font-size: .86rem; background: var(--panel); border: 1px solid var(--rule); border-radius: 6px; padding: 10px 12px; overflow-x: auto; white-space: pre; line-height: 1.7; }
+.cols2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px 28px; }
+.cols2 > div { min-width: 0; }
+ul { padding-left: 1.1rem; margin: .5rem 0; }
+li { margin: .35rem 0; }
+.src { font-size: .8rem; color: var(--muted); }
+.src a { color: var(--accent); word-break: break-word; }
+.disclaimer { font-size: .78rem; color: var(--muted); border-top: 1px solid var(--rule); margin-top: 2.4rem; padding-top: 1rem; }
+</style>
+
+<header class="band">
+  <div class="inner">
+    <span class="firm">Independent student equity research · Software / SaaS · Canada</span>
+    <span class="meta">29 Sep 2026 · Prices as of 17 Sep 2026</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="kicker">Docebo Inc. · TSX: DCBO · Reverse DCF</div>
+  <h1>The market is betting Docebo loses a quarter of its revenue every year</h1>
+  <p class="sub">At C$33.22, Docebo's share price only makes sense if about 24.5% of its recurring revenue cancels each year. The company's reported 99% net revenue retention points to about 9%.</p>
+
+  <div class="opener">
+    <ul class="takeaways">
+      <li><strong>The hidden bet: 24.5% annual churn.</strong> We rebuilt Docebo's business as a 10-year ARR model and solved for the churn rate that matches today's price. That is 2.7× the ~9% implied by the company's own retention figure.</li>
+      <li><strong>The price assumes no new customers.</strong> If Docebo never signed another new customer and only kept its current base at reported retention, our model still values the stock at C$35.41, above the market price.</li>
+      <li><strong>At reported churn, the model value is C$69.83.</strong> That uses a 10% discount rate. Across 8–12% discount rates, the value at reported churn ranges from C$53 to C$99.</li>
+      <li><strong>What would make the market right:</strong> AI replacing corporate training software, more large customers leaving after AWS, or margins falling back. The deciding number to watch is net revenue retention in the Q3-2026 results (early November).</li>
+    </ul>
+    <aside class="keydata" aria-label="Key data">
+      <h3>Key data</h3>
+      <div class="kv">
+        <span>Share price (TSX)</span><span>C$33.22</span>
+        <span>Model value (base)</span><span>C$69.83</span>
+        <span>Implied upside</span><span>+110%</span>
+        <span class="sep"></span><span class="sep"></span>
+        <span>Shares outstanding</span><span>24.95M</span>
+        <span>Market cap</span><span>C$829M</span>
+        <span>Net debt</span><span>US$42M</span>
+        <span>Enterprise value</span><span>US$630M</span>
+        <span class="sep"></span><span class="sep"></span>
+        <span>ARR (Jun-26)</span><span>US$255.1M</span>
+        <span>ARR growth</span><span>9.5%</span>
+        <span>Gross margin</span><span>79.4%</span>
+        <span>LTM free cash flow</span><span>US$48.7M</span>
+        <span>EV / ARR</span><span>2.5×</span>
+        <span>EV / LTM FCF</span><span>12.9×</span>
+      </div>
+      <div class="view">Market-implied view: pessimistic</div>
+    </aside>
+  </div>
+
+  <h2>1. Company overview</h2>
+  <p>Docebo sells a cloud learning platform that companies use to train employees, customers and partners. Revenue is almost entirely subscription-based (93% in Q2-2026), so annual recurring revenue (ARR) is the best measure of the business. The company is headquartered in Toronto, was founded in Italy, reports in US dollars, and is listed on the TSX and Nasdaq. Intercap owns about 64% of the shares.</p>
+  <p>Growth has slowed from about 18% in 2024 to 9.5% today. Two partner relationships are winding down: AWS (Amazon), Docebo's largest OEM customer at 6.2% of ARR in Sep-2025, and Dayforce. Management says underlying growth excluding these is about 14%, and that ARR growth re-accelerated in both Q1 and Q2 2026. Meanwhile profitability has improved: adjusted EBITDA margin was 16.4% in Q2-2026, with Q3 guidance implying about 23%.</p>
+
+  <div class="exhibit">
+    <div class="cap"><b>Exhibit 1</b> · ARR and free cash flow by quarter (US$M)</div>
+    <div class="charts">
+      <div class="chart" id="c-arr" aria-label="ARR by quarter bar chart"></div>
+      <div class="chart" id="c-fcf" aria-label="Free cash flow by quarter bar chart"></div>
+    </div>
+    <div class="foot">ARR grows steadily. FCF is lumpy (Q1-26 includes customer prepayments), so we value off the last-twelve-months total of US$48.7M. Source: company releases.</div>
+  </div>
+
+  <h2>2. Method: running the model backwards</h2>
+  <p>A normal DCF picks assumptions and produces a share price. A reverse DCF starts from the share price and solves for the assumption the market must be using. We solve for churn because, for a subscription business, retention drives the value more than anything else. We work at the customer-dollar level instead of on a single growth rate.</p>
+  <div class="eq">① Ending ARR  = Starting ARR + New ARR + Expansion − Churn
+② Revenue     = average(Starting ARR, Ending ARR) × 1.06   (services on top of ARR)
+③ FCF         = Revenue × EBITDA margin × FCF conversion
+④ Value today = Σ FCF_t ÷ (1 + r)^t  +  [FCF_10 × (1 + g) ÷ (r − g)] ÷ (1 + r)^10
+⑤ Price       = (Enterprise value + cash − debt) ÷ shares × USD/CAD
+⑥ Solve:       Price(churn) = C$33.22   →   churn = 24.5%</div>
+  <p>"Reported churn" isn't disclosed directly, so we derive it from net revenue retention (NRR): churn = expansion + (1 − NRR) = 8% + (1 − 99%) = 9%. All other inputs stay fixed at values anchored to reported numbers. Only churn moves.</p>
+
+  <div class="exhibit">
+    <div class="cap"><b>Exhibit 2</b> · Base-case forecast at reported churn (US$M)</div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Year</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th><th>10</th></tr></thead>
+        <tbody>
+          <tr><td>Starting ARR</td><td>255.1</td><td>278.9</td><td>304.5</td><td>331.7</td><td>360.5</td><td>390.8</td><td>422.5</td><td>455.4</td><td>489.3</td><td>524.1</td></tr>
+          <tr><td>+ New-customer ARR</td><td>26.4</td><td>28.3</td><td>30.3</td><td>32.1</td><td>33.9</td><td>35.6</td><td>37.1</td><td>38.5</td><td>39.7</td><td>40.7</td></tr>
+          <tr><td>+ Expansion (8%)</td><td>20.4</td><td>22.3</td><td>24.4</td><td>26.5</td><td>28.8</td><td>31.3</td><td>33.8</td><td>36.4</td><td>39.1</td><td>41.9</td></tr>
+          <tr><td>− Churn (9%)</td><td>(23.0)</td><td>(25.1)</td><td>(27.4)</td><td>(29.9)</td><td>(32.4)</td><td>(35.2)</td><td>(38.0)</td><td>(41.0)</td><td>(44.0)</td><td>(47.2)</td></tr>
+          <tr class="total"><td>Ending ARR</td><td>278.9</td><td>304.5</td><td>331.7</td><td>360.5</td><td>390.8</td><td>422.5</td><td>455.4</td><td>489.3</td><td>524.1</td><td>559.6</td></tr>
+          <tr><td>Revenue</td><td>283.5</td><td>309.7</td><td>337.7</td><td>367.4</td><td>398.8</td><td>431.7</td><td>466.0</td><td>501.5</td><td>538.0</td><td>575.3</td></tr>
+          <tr><td>EBITDA margin</td><td>20.5%</td><td>22.3%</td><td>24.2%</td><td>26.1%</td><td>28.0%</td><td>28.0%</td><td>28.0%</td><td>28.0%</td><td>28.0%</td><td>28.0%</td></tr>
+          <tr><td>Adjusted EBITDA</td><td>58.0</td><td>69.2</td><td>81.8</td><td>95.9</td><td>111.7</td><td>120.9</td><td>130.5</td><td>140.4</td><td>150.6</td><td>161.1</td></tr>
+          <tr class="total"><td>Free cash flow</td><td>56.8</td><td>65.5</td><td>74.9</td><td>84.7</td><td>94.9</td><td>102.7</td><td>110.9</td><td>119.3</td><td>128.0</td><td>136.9</td></tr>
+          <tr><td>Present value at 10%</td><td>51.7</td><td>54.2</td><td>56.2</td><td>57.8</td><td>58.9</td><td>58.0</td><td>56.9</td><td>55.7</td><td>54.3</td><td>52.8</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="exhibit">
+    <div class="cap"><b>Exhibit 3</b> · From cash flows to value per share</div>
+    <div class="tablewrap">
+      <table style="max-width: 32rem">
+        <tbody>
+          <tr><td>Sum of PV of free cash flow, Years 1–10</td><td>556.5</td></tr>
+          <tr><td>PV of terminal value (2.5% growth)</td><td>721.4</td></tr>
+          <tr class="total"><td>Enterprise value (US$M)</td><td>1,277.9</td></tr>
+          <tr><td>+ Cash / − Debt</td><td>45.7 / (88.0)</td></tr>
+          <tr class="total"><td>Equity value (US$M)</td><td>1,235.6</td></tr>
+          <tr><td>÷ Shares (M) → US$ per share</td><td>24.95 → 49.52</td></tr>
+          <tr class="hl total"><td>Value per share (C$, at 1.41)</td><td>69.83</td></tr>
+          <tr><td>Terminal value share of EV</td><td>56%</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <h2>3. The finding: four ways to read C$33.22</h2>
+  <p>Solving for churn is our main lens. The same price can be read through any single lever, holding the others at base case. Each reading tells the same story: the market is assuming something far worse than the reported numbers.</p>
+  <div class="exhibit">
+    <div class="cap"><b>Exhibit 4</b> · What today's price requires, one lever at a time</div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Lever</th><th>Reported / base case</th><th>Needed to justify C$33.22</th></tr></thead>
+        <tbody>
+          <tr class="hl"><td><strong>Annual ARR churn</strong></td><td>9.0%</td><td class="bad">24.5%</td></tr>
+          <tr><td>Net revenue retention (same thing, other way)</td><td>99%</td><td class="bad">83%</td></tr>
+          <tr><td>Long-term EBITDA margin</td><td>28% (today 18.6%)</td><td class="bad">12.7%, forever</td></tr>
+          <tr><td>New-customer ARR</td><td>US$24M/yr, growing</td><td class="bad">~zero, forever</td></tr>
+          <tr><td>Required return (discount rate)</td><td>10%</td><td class="bad">16.5%</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="foot">Solved with the same model as Exhibit 2, one lever at a time.</div>
+  </div>
+  <div class="callout">
+    <div class="big">Even with zero new customers ever, the model gives C$35.41 per share. That's above today's price.</div>
+    <p style="margin-bottom:0">In other words, the market is paying for Docebo's existing customer base only, and even then at a discount. It is pricing in no value at all for future sales.</p>
+  </div>
+
+  <h2>4. Sensitivity</h2>
+  <div class="exhibit">
+    <div class="cap"><b>Exhibit 5</b> · Value per share (C$): churn × discount rate</div>
+    <div class="tablewrap">
+      <table class="grid">
+        <thead><tr><th>Churn ↓ / Discount →</th><th>8%</th><th>9%</th><th>10%</th><th>11%</th><th>12%</th></tr></thead>
+        <tbody>
+          <tr><td>5.0%</td><td class="up">124.62</td><td class="up">102.78</td><td class="up">86.88</td><td class="up">74.82</td><td class="up">65.39</td></tr>
+          <tr><td>7.5%</td><td class="up">107.97</td><td class="up">89.31</td><td class="up">75.71</td><td class="up">65.38</td><td class="up">57.29</td></tr>
+          <tr><td><strong>9.0% (reported)</strong></td><td class="up">99.24</td><td class="up">82.23</td><td class="up"><strong>69.83</strong></td><td class="up">60.40</td><td class="up">53.01</td></tr>
+          <tr><td>10.0%</td><td class="up">93.89</td><td class="up">77.89</td><td class="up">66.21</td><td class="up">57.34</td><td class="up">50.37</td></tr>
+          <tr><td>12.5%</td><td class="up">81.97</td><td class="up">68.20</td><td class="up">58.14</td><td class="up">50.48</td><td class="up">44.46</td></tr>
+          <tr><td>15.0%</td><td class="up">71.90</td><td class="up">59.99</td><td class="up">51.28</td><td class="up">44.63</td><td class="up">39.41</td></tr>
+          <tr><td>20.0%</td><td class="up">56.15</td><td class="up">47.09</td><td class="up">40.45</td><td class="up">35.38</td><td class="dn near">31.37</td></tr>
+          <tr><td>25.0%</td><td class="up">44.80</td><td class="up">37.74</td><td class="dn near">32.55</td><td class="dn">28.58</td><td class="dn">25.43</td></tr>
+          <tr><td>30.0%</td><td class="up near">36.56</td><td class="dn">30.90</td><td class="dn">26.73</td><td class="dn">23.53</td><td class="dn">21.00</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="foot">Green = above the C$33.22 market price; red = below. Boxed cells are closest to the market price.</div>
+  </div>
+  <div class="cols2">
+    <div>
+      <h3>Implied churn at each discount rate</h3>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Discount rate</th><th>8%</th><th>9%</th><th>10%</th><th>11%</th><th>12%</th></tr></thead>
+          <tbody><tr><td>Implied churn</td><td>32.6%</td><td>28.1%</td><td>24.5%</td><td>21.4%</td><td>18.7%</td></tr></tbody>
+        </table>
+      </div>
+      <p>Even at a harsh 12%, the market-implied churn is about double what Docebo reports.</p>
+    </div>
+    <div>
+      <h3>Other stress tests (at reported churn)</h3>
+      <div class="tablewrap">
+        <table>
+          <tbody>
+            <tr><td>Terminal growth 0% instead of 2.5%</td><td>C$58.89</td></tr>
+            <tr><td>Margin target 20% instead of 28%</td><td>C$50.65</td></tr>
+            <tr><td>No new customers, ever</td><td>C$35.41</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>No single conservative change gets the value down to the market price.</p>
+    </div>
+  </div>
+
+  <h2>5. Why the market might be right</h2>
+  <div class="cols2">
+    <div>
+      <h3>Risks</h3>
+      <ul>
+        <li><strong>AI disruption.</strong> Generative AI could make course building and delivery a commodity, which would push churn and prices the wrong way across the category.</li>
+        <li><strong>Customer concentration.</strong> The AWS and Dayforce wind-downs show that large partner accounts can leave. Retention of 99% includes some of that drag already.</li>
+        <li><strong>Hidden costs.</strong> Adjusted EBITDA excludes stock-based compensation, so our cash flows are somewhat generous.</li>
+        <li><strong>Ownership structure.</strong> A 64% controlling shareholder and a small free float can keep a lasting discount on the shares.</li>
+      </ul>
+    </div>
+    <div>
+      <h3>What would prove the market wrong</h3>
+      <ul>
+        <li>Net revenue retention holding at 99% or above once AWS is fully out of the base.</li>
+        <li>Continued ARR re-acceleration (two straight quarters so far).</li>
+        <li>EBITDA margin expanding toward the ~23% implied by Q3 guidance.</li>
+        <li>Capital returns: management launched a US$70M share tender (substantial issuer bid) in July 2026.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>6. Conclusion and what to watch</h2>
+  <p>Docebo's share price is betting on a sharp deterioration. It needs roughly 24.5% of ARR to disappear every year, or an equally severe drop in margins or new sales. The company's reported figures show nothing close to that today. If retention holds near 99%, the stock looks materially undervalued on our assumptions. If AI disruption shows up in the retention numbers, the market will have been early rather than wrong.</p>
+  <p><strong>Catalyst:</strong> Q3-2026 results (expected early November 2026). We'll re-run the model with the new ARR, retention and price, and log whether the market's implied churn rises or falls.</p>
+
+  <h2>Appendix: assumptions and sources</h2>
+  <div class="cols2">
+    <div>
+      <ul>
+        <li>Starting ARR US$255.1M (30 Jun 2026). New-customer ARR US$24.4M in the last 12 months, growing 8% and fading to 2.5% by Year 10.</li>
+        <li>Expansion 8% of starting ARR a year (not disclosed, our assumption). Churn 9% (derived).</li>
+        <li>Revenue per $ of average ARR: 1.06 (from the last 12 months).</li>
+        <li>EBITDA margin 18.6% → 28% over 5 years. FCF conversion 101% → 85%.</li>
+        <li>Discount rate 10%, terminal growth 2.5%, USD/CAD 1.41. Year-end discounting.</li>
+      </ul>
+    </div>
+    <div class="src">
+      <p>Figures were compiled from company releases via public news sources. Some quarterly revenue was derived (FCF ÷ FCF margin). Verify against filings on sedarplus.ca.</p>
+      <ul>
+        <li><a href="https://www.theglobeandmail.com/investing/markets/stocks/DCBO-T/pressreleases/3714410/docebo-reports-second-quarter-2026-results/">Q2-2026 results</a></li>
+        <li><a href="https://www.businesswire.com/news/home/20260508578551/en/Docebo-Reports-First-Quarter-2026-Results">Q1-2026 results</a></li>
+        <li><a href="https://www.businesswire.com/news/home/20260227263046/en/Docebo-Reports-Fourth-Quarter-and-Fiscal-Year-2025-Results">Q4 / FY2025 results</a></li>
+        <li><a href="https://www.businesswire.com/news/home/20251107340369/en/Docebo-Reports-Third-Quarter-2025-Results">Q3-2025 results</a></li>
+        <li><a href="https://www.theglobeandmail.com/investing/markets/stocks/DCBO/pressreleases/632787/docebo-earnings-call-bookings-strength-amid-cautious-outlook/">Q4-2025 call: 99% net dollar retention</a></li>
+        <li><a href="https://finance.yahoo.com/markets/stocks/articles/docebo-inc-announces-substantial-issuer-103000376.html">Substantial issuer bid and FY2026 guidance</a></li>
+        <li><a href="https://money.tmx.com/en/quote/DCBO">TMX Money (price)</a></li>
+      </ul>
+    </div>
+  </div>
+  <p class="disclaimer">Independent student analysis prepared for educational purposes. Not investment advice and not a recommendation to buy or sell any security. The author holds no position in Docebo. Model: Docebo_Reverse_DCF.xlsx.</p>
+</main>
+
+<script>
+(function () {
+  var Q = ['Q3-24','Q4-24','Q1-25','Q2-25','Q3-25','Q4-25','Q1-26','Q2-26'];
+  function chart(id, title, vals, max, step, fmt) {
+    var el = document.getElementById(id), W = 360, H = 210, L = 34, R = 8, T = 26, B = 24;
+    var pw = W - L - R, ph = H - T - B, slot = pw / vals.length, bw = Math.min(26, slot * 0.62);
+    var y = function (v) { return T + ph - v / max * ph; };
+    var s = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + title + '">';
+    s += '<text x="0" y="12" style="font-weight:700;fill:var(--ink)">' + title + '</text>';
+    for (var g = 0; g <= max; g += step) {
+      s += '<line class="gl" x1="' + L + '" x2="' + (W - R) + '" y1="' + y(g) + '" y2="' + y(g) + '"/>';
+      s += '<text x="' + (L - 6) + '" y="' + (y(g) + 4) + '" text-anchor="end">' + g + '</text>';
+    }
+    vals.forEach(function (v, i) {
+      var cx = L + slot * i + slot / 2, x = cx - bw / 2, top = y(v), h = T + ph - top, r = Math.min(4, h);
+      var last = i === vals.length - 1;
+      s += '<path class="bar' + (last ? ' last' : '') + '" d="M' + x + ',' + (T + ph) + ' V' + (top + r) + ' Q' + x + ',' + top + ' ' + (x + r) + ',' + top +
+           ' H' + (x + bw - r) + ' Q' + (x + bw) + ',' + top + ' ' + (x + bw) + ',' + (top + r) + ' V' + (T + ph) + ' Z"/>';
+      s += '<text x="' + cx + '" y="' + (H - 6) + '" text-anchor="middle">' + Q[i].replace('-', "'") + '</text>';
+      if (last) s += '<text class="endlab" x="' + cx + '" y="' + (top - 6) + '" text-anchor="middle">' + fmt(v) + '</text>';
+      s += '<rect class="hit" data-i="' + i + '" x="' + (L + slot * i) + '" y="' + T + '" width="' + slot + '" height="' + ph + '"/>';
+    });
+    el.innerHTML = s + '</svg>';
+    var tip = document.createElement('div'); tip.className = 'tip'; tip.hidden = true; el.appendChild(tip);
+    el.querySelectorAll('.hit').forEach(function (h) {
+      h.addEventListener('mouseenter', function () {
+        var i = +h.dataset.i, box = el.getBoundingClientRect(), svg = el.querySelector('svg').getBoundingClientRect(), k = svg.width / W;
+        tip.textContent = Q[i] + ': US$' + fmt(vals[i]) + 'M';
+        tip.style.left = ((L + slot * i + slot / 2) * k + svg.left - box.left) + 'px';
+        tip.style.top = (y(vals[i]) * k + svg.top - box.top) + 'px';
+        tip.hidden = false;
+      });
+      h.addEventListener('mouseleave', function () { tip.hidden = true; });
+    });
+  }
+  chart('c-arr', 'ARR (US$M)', [214.1, 219.7, 225.1, 233.0, 235.6, 238.1, 248.9, 255.1], 300, 100, function (v) { return v.toFixed(1); });
+  chart('c-fcf', 'Free cash flow (US$M)', [4.5, 10.1, 9.0, 11.4, 5.7, 12.3, 27.6, 3.1], 30, 10, function (v) { return v.toFixed(1); });
+})();
+</script>
