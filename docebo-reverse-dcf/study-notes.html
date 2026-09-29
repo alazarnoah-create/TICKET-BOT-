@@ -1,0 +1,303 @@
+<title>Docebo's Hidden Bet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,700&family=Public+Sans:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: a single research-note column (~70ch), numbers set in mono, answer panels in a tinted "ledger" box */
+:root {
+  --bg: #fbfcfd; --panel: #eef3f6; --ink: #14212b; --muted: #5a6975; --rule: #d3dde4;
+  --accent: #0f6b74; --accent-soft: #d8ecee; --warn: #b3412e; --warn-soft: #f7e1dc; --good: #2f7a3e; --good-soft: #dcefe0;
+  --display: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --body: "Public Sans", "Helvetica Neue", Arial, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0f171d; --panel: #17232b; --ink: #e4ecf1; --muted: #9aabb7; --rule: #2a3a45;
+  --accent: #5cc2cc; --accent-soft: #173a3f; --warn: #f08b75; --warn-soft: #3e2420; --good: #7cc98b; --good-soft: #1d3524; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0f171d; --panel: #17232b; --ink: #e4ecf1; --muted: #9aabb7; --rule: #2a3a45;
+  --accent: #5cc2cc; --accent-soft: #173a3f; --warn: #f08b75; --warn-soft: #3e2420; --good: #7cc98b; --good-soft: #1d3524; color-scheme: dark }
+
+body { background: var(--bg); color: var(--ink); font: 16px/1.6 var(--body); }
+.wrap { max-width: 46rem; margin: 0 auto; padding-inline: 18px; padding-block: 40px 80px; }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; line-height: 1.2; margin: 0; }
+h1 { font-size: clamp(2rem, 6vw, 2.9rem); font-weight: 700; }
+h2 { font-size: 1.6rem; font-weight: 700; margin-top: 3.2rem; padding-top: 1.2rem; border-top: 1px solid var(--rule); }
+h3 { font-size: 1.15rem; font-weight: 700; margin-top: 1.6rem; }
+p { margin: .8rem 0; }
+.eyebrow { font: 600 .75rem/1 var(--body); letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
+.lede { font-size: 1.15rem; color: var(--muted); }
+.num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+nav.toc { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 1.2rem; font-size: .9rem; }
+nav.toc a { color: var(--accent); text-decoration: none; border-bottom: 1px solid var(--accent-soft); }
+nav.toc a:hover, nav.toc a:focus-visible { border-bottom-color: var(--accent); outline: none; }
+
+.answer { margin-top: 2rem; background: var(--panel); border: 1px solid var(--rule); border-radius: 10px; padding: 22px; display: grid; gap: 18px; }
+.answer-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 16px; }
+.stat .lab { font-size: .78rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.stat .val { font: 500 1.9rem/1.2 var(--mono); font-variant-numeric: tabular-nums; }
+.stat .sub { font-size: .85rem; color: var(--muted); }
+.stat.hot .val { color: var(--warn); }
+.verdict { background: var(--warn-soft); color: var(--ink); border-radius: 8px; padding: 12px 14px; font-weight: 600; }
+
+.bars { display: grid; gap: 10px; margin-top: .4rem; }
+.bar { display: grid; grid-template-columns: 9.5rem 1fr 3.6rem; align-items: center; gap: 10px; font-size: .9rem; }
+.bar .track { height: 14px; background: var(--bg); border: 1px solid var(--rule); border-radius: 7px; overflow: hidden; }
+.bar .fill { height: 100%; background: var(--accent); }
+.bar.hot .fill { background: var(--warn); }
+.bar .v { text-align: right; }
+
+.flow { overflow-x: auto; margin: 1.2rem 0; }
+.flow svg { display: block; min-width: 640px; width: 100%; height: auto; }
+.flow text { font-family: var(--body); fill: var(--ink); }
+.flow .small { fill: var(--muted); font-size: 11px; }
+.flow .box { fill: var(--panel); stroke: var(--rule); }
+.flow .boxk { fill: var(--accent-soft); stroke: var(--accent); }
+.flow .arr { stroke: var(--accent); fill: none; stroke-width: 2; }
+.flow .rev { stroke: var(--warn); fill: none; stroke-width: 2; stroke-dasharray: 6 5; }
+.flow .revt { fill: var(--warn); font-weight: 700; font-size: 12px; }
+
+.analogy { border-left: 3px solid var(--accent); padding: 4px 0 4px 16px; margin: 1.2rem 0; }
+.gloss { display: grid; gap: 0; margin-top: 1rem; border-top: 1px solid var(--rule); }
+.gloss > div { display: grid; grid-template-columns: 11rem 1fr; gap: 14px; padding: 12px 0; border-bottom: 1px solid var(--rule); }
+.gloss dt { font-weight: 700; }
+.gloss dd { margin: 0; min-width: 0; }
+.gloss .ex { display: block; color: var(--muted); font-size: .9rem; margin-top: 2px; }
+@media (max-width: 520px) { .gloss > div { grid-template-columns: 1fr; gap: 2px; } .bar { grid-template-columns: 7rem 1fr 3.2rem; } }
+
+.tablewrap { overflow-x: auto; margin: 1rem 0; }
+table { border-collapse: collapse; width: 100%; font-size: .92rem; }
+th, td { padding: 8px 10px; border-bottom: 1px solid var(--rule); text-align: left; vertical-align: top; }
+th { font-size: .75rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+td.r, th.r { text-align: right; }
+.grid td { text-align: center; font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.grid td.hd, .grid th { background: var(--panel); color: var(--ink); }
+.grid td.up { background: var(--good-soft); }
+.grid td.dn { background: var(--warn-soft); }
+.grid td.near { outline: 2px solid var(--ink); outline-offset: -2px; font-weight: 700; }
+.legend { font-size: .85rem; color: var(--muted); }
+
+ol.steps { counter-reset: s; list-style: none; padding: 0; margin: 1rem 0; display: grid; gap: 12px; }
+ol.steps > li { counter-increment: s; display: grid; grid-template-columns: 2.2rem 1fr; gap: 10px; }
+ol.steps > li::before { content: counter(s); font: 500 .95rem/2rem var(--mono); text-align: center; width: 2rem; height: 2rem; border-radius: 50%; background: var(--accent-soft); color: var(--accent); }
+ol.steps > li > div { min-width: 0; }
+kbd, code { font-family: var(--mono); font-size: .86em; background: var(--panel); border: 1px solid var(--rule); border-radius: 4px; padding: 1px 5px; }
+
+.onepager { background: var(--panel); border: 1px solid var(--rule); border-radius: 10px; padding: 22px; margin-top: 1rem; }
+.onepager h3:first-child { margin-top: 0; font-size: 1.35rem; }
+.qa dt { font-weight: 700; margin-top: 1rem; }
+.qa dd { margin: .2rem 0 0; }
+ul { padding-left: 1.2rem; }
+li { margin: .3rem 0; }
+.src { font-size: .85rem; color: var(--muted); }
+.src a { color: var(--accent); word-break: break-word; }
+.copy { font: 600 .8rem var(--body); color: var(--accent); background: transparent; border: 1px solid var(--accent); border-radius: 6px; padding: 5px 10px; cursor: pointer; }
+.copy:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.pitch { font-family: var(--display); font-size: 1.1rem; line-height: 1.55; }
+</style>
+
+<main class="wrap">
+  <div class="eyebrow">Reverse DCF · Docebo Inc. (TSX: DCBO) · data as of 17 Sep 2026</div>
+  <h1>What is Docebo's stock price secretly betting on?</h1>
+  <p class="lede">The same model you built before (customers, then revenue, then profit, then cash), run backwards. We start from today's share price and ask which churn rate would make that price fair.</p>
+  <nav class="toc" aria-label="Sections">
+    <a href="#answer">The answer</a><a href="#idea">The idea</a><a href="#words">Words to know</a><a href="#numbers">Docebo's numbers</a><a href="#grid">What-if grid</a><a href="#why">Is the market right?</a><a href="#todo">What you do next</a><a href="#onepager">One-page write-up</a><a href="#interview">Interview answers</a>
+  </nav>
+
+  <section class="answer" id="answer" aria-label="The answer">
+    <div class="answer-row">
+      <div class="stat"><div class="lab">Market price</div><div class="val">C$33.22</div><div class="sub">TSX close, 17 Sep 2026</div></div>
+      <div class="stat"><div class="lab">Our model's value</div><div class="val">C$69.83</div><div class="sub">at reported churn, 10% discount rate</div></div>
+      <div class="stat hot"><div class="lab">Market-implied churn</div><div class="val">24.5%</div><div class="sub">of ARR lost per year</div></div>
+    </div>
+    <div class="bars" aria-label="Churn comparison">
+      <div class="bar"><span>What Docebo reports</span><div class="track"><div class="fill" style="width:36.7%"></div></div><span class="v num">9.0%</span></div>
+      <div class="bar hot"><span>What the price implies</span><div class="track"><div class="fill" style="width:100%"></div></div><span class="v num">24.5%</span></div>
+    </div>
+    <div class="verdict">The market is pessimistic. For C$33 to be a fair price, Docebo would have to lose about a quarter of its recurring revenue every year. Its own reports point to about 9%. In retention terms, the price assumes 83% net revenue retention. Docebo reported 99%.</div>
+  </section>
+
+  <h2 id="idea">The idea, like you've never seen finance before</h2>
+  <div class="analogy">
+    <p><strong>Think of a rental house.</strong> Normally you'd say: "It earns $2,000 a month, so it's worth about $400,000." That's working forward.</p>
+    <p>Working backwards: "It's selling for $250,000. What rent must buyers expect to get?" If the answer is much lower than the real rent, buyers are scared of something, or the house is a bargain.</p>
+  </div>
+  <p>We do exactly that with a stock. The share price is the selling price. Churn (customers cancelling) is the thing we solve for.</p>
+
+  <div class="flow" role="img" aria-label="Forward: ARR to revenue to free cash flow to today's dollars to price per share. Reverse: start at the market price and solve back for churn.">
+    <svg viewBox="0 0 700 190" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--accent)"/></marker>
+        <marker id="ahr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--warn)"/></marker>
+      </defs>
+      <rect class="boxk" x="6" y="30" width="112" height="58" rx="8"/>
+      <text x="62" y="54" text-anchor="middle" font-weight="700" font-size="13">ARR</text>
+      <text class="small" x="62" y="72" text-anchor="middle">new + upsell − churn</text>
+      <rect class="box" x="150" y="30" width="112" height="58" rx="8"/>
+      <text x="206" y="54" text-anchor="middle" font-weight="700" font-size="13">Revenue</text>
+      <text class="small" x="206" y="72" text-anchor="middle">what's earned</text>
+      <rect class="box" x="294" y="30" width="112" height="58" rx="8"/>
+      <text x="350" y="54" text-anchor="middle" font-weight="700" font-size="13">Free cash flow</text>
+      <text class="small" x="350" y="72" text-anchor="middle">cash left over</text>
+      <rect class="box" x="438" y="30" width="112" height="58" rx="8"/>
+      <text x="494" y="54" text-anchor="middle" font-weight="700" font-size="13">Today's dollars</text>
+      <text class="small" x="494" y="72" text-anchor="middle">discount + terminal</text>
+      <rect class="box" x="582" y="30" width="112" height="58" rx="8"/>
+      <text x="638" y="54" text-anchor="middle" font-weight="700" font-size="13">Price / share</text>
+      <text class="small" x="638" y="72" text-anchor="middle">÷ number of shares</text>
+      <path class="arr" d="M118 59 H148" marker-end="url(#ah)"/>
+      <path class="arr" d="M262 59 H292" marker-end="url(#ah)"/>
+      <path class="arr" d="M406 59 H436" marker-end="url(#ah)"/>
+      <path class="arr" d="M550 59 H580" marker-end="url(#ah)"/>
+      <text class="small" x="350" y="18" text-anchor="middle">FORWARD (normal DCF): assumptions → price</text>
+      <path class="rev" d="M638 92 V140 H62 V94" marker-end="url(#ahr)"/>
+      <text class="revt" x="350" y="162" text-anchor="middle">REVERSE: start at the real price C$33.22 → solve for churn</text>
+    </svg>
+  </div>
+
+  <h2 id="words">Words to know (copy these into your notebook)</h2>
+  <dl class="gloss">
+    <div><dt>ARR</dt><dd>Annual recurring revenue. The yearly value of all active subscriptions right now.<span class="ex">Docebo: US$255.1M on 30 Jun 2026.</span></dd></div>
+    <div><dt>Churn</dt><dd>The share of last year's ARR that cancelled or downgraded.<span class="ex">Lose $9 of every $100 → 9% churn.</span></dd></div>
+    <div><dt>Expansion</dt><dd>Extra ARR from existing customers buying more (more seats, add-ons).<span class="ex">Our assumption: 8% a year.</span></dd></div>
+    <div><dt>Net revenue retention (NRR)</dt><dd>Of every $100 customers paid last year, how much they pay this year. Equals 100% − churn + expansion. Above 100% is good.<span class="ex">Docebo 2025: 99% (101% without Amazon's AWS, a big customer that left).</span></dd></div>
+    <div><dt>ARR bridge</dt><dd>Starting ARR + new + expansion − churn = ending ARR. Your SaaS model's customer roll-forward, in dollars.</dd></div>
+    <div><dt>EBITDA</dt><dd>Profit before interest, taxes and depreciation. A rough measure of operating profit.<span class="ex">Docebo's last 12 months: 18.6% of revenue.</span></dd></div>
+    <div><dt>Free cash flow (FCF)</dt><dd>Cash from operations minus spending on equipment and software. The money actually left over.<span class="ex">Last 12 months: US$48.7M.</span></dd></div>
+    <div><dt>Discount rate</dt><dd>How much you shrink future money each year, because $1 later is worth less than $1 now (risk, waiting). At 10%, $110 next year = $100 today.</dd></div>
+    <div><dt>Terminal value</dt><dd>One lump sum for all the years after Year 10: FCF in Year 11 ÷ (discount rate − long-run growth).<span class="ex">Here it's 56% of the total value. That's normal, and also why small changes matter.</span></dd></div>
+    <div><dt>Enterprise value (EV)</dt><dd>What the whole business is worth: the sum of all discounted cash flows.</dd></div>
+    <div><dt>Equity value</dt><dd>EV + cash − debt. What belongs to shareholders. Divide by the number of shares to get the value per share.</dd></div>
+    <div><dt>DCF</dt><dd>Discounted cash flow. Forecast the cash, shrink it to today's dollars, add it up.</dd></div>
+    <div><dt>Reverse DCF</dt><dd>Fix the answer at today's price and solve for the assumption. That assumption is the market's hidden bet.</dd></div>
+    <div><dt>Goal Seek</dt><dd>Excel tool: "change this input until that output equals X." We use it to find the churn that gives C$33.22.</dd></div>
+    <div><dt>Sensitivity table</dt><dd>A grid of answers for many combinations of two inputs. Excel builds one with Data → What-If Analysis → Data Table.</dd></div>
+  </dl>
+
+  <h2 id="numbers">Docebo's real numbers</h2>
+  <p><strong>The company in 3 sentences:</strong> Docebo is a Toronto-headquartered software company (founded in Italy) that sells an AI-powered learning platform, used by businesses to train employees, customers and partners. Customers pay by subscription, so almost all revenue is recurring. It's listed on the TSX and Nasdaq, reports in US dollars, and is about 64% controlled by the investor Intercap.</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Quarter (US$M)</th><th class="r">Q3-24</th><th class="r">Q4-24</th><th class="r">Q1-25</th><th class="r">Q2-25</th><th class="r">Q3-25</th><th class="r">Q4-25</th><th class="r">Q1-26</th><th class="r">Q2-26</th></tr></thead>
+      <tbody class="num">
+        <tr><td>ARR</td><td class="r">214.1</td><td class="r">219.7</td><td class="r">225.1</td><td class="r">233.0</td><td class="r">235.6</td><td class="r">238.1</td><td class="r">248.9</td><td class="r">255.1</td></tr>
+        <tr><td>Revenue</td><td class="r">55.4</td><td class="r">57.0</td><td class="r">57.3</td><td class="r">61.0</td><td class="r">62.0</td><td class="r">62.8</td><td class="r">65.6</td><td class="r">68.7</td></tr>
+        <tr><td>Free cash flow</td><td class="r">4.5</td><td class="r">10.1</td><td class="r">9.0</td><td class="r">11.4</td><td class="r">5.7</td><td class="r">12.3</td><td class="r">27.6</td><td class="r">3.1</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="tablewrap">
+    <table>
+      <tbody>
+        <tr><td>Share price (TSX)</td><td class="r num">C$33.22</td><td>Shares outstanding</td><td class="r num">24.95M</td></tr>
+        <tr><td>Cash (30 Jun 2026)</td><td class="r num">US$45.7M</td><td>Debt</td><td class="r num">US$88.0M</td></tr>
+        <tr><td>Gross margin</td><td class="r num">79.4%</td><td>ARR growth (yearly)</td><td class="r num">9.5%</td></tr>
+        <tr><td>What the market pays</td><td class="r num">2.5× ARR</td><td>…in free cash flow</td><td class="r num">12.9× FCF</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="legend">A few quarters were worked out from other reported figures (for example, revenue = FCF ÷ FCF margin). The Inputs tab in the spreadsheet says which. Check each one against the filings on <a href="https://www.sedarplus.ca" style="color:var(--accent)">sedarplus.ca</a> before you share this. Doing that check is Step 2 of the project, and it's how you learn to read a report.</p>
+
+  <h3>Assumptions the model makes (all editable)</h3>
+  <ul>
+    <li>New-customer ARR starts at <span class="num">US$24.4M</span> a year (from the last 12 months), grows 8%, and slows to 2.5% by Year 10.</li>
+    <li>Expansion is 8% a year. With 99% NRR, that means about 9% churn (8% + 1%).</li>
+    <li>EBITDA margin climbs from 18.6% today to 28% in 5 years. 85% of EBITDA becomes free cash long term.</li>
+    <li>10% discount rate, 2.5% growth forever after Year 10, USD/CAD 1.41.</li>
+  </ul>
+
+  <h2 id="grid">The what-if grid</h2>
+  <p>Each cell is the model's share price in C$. Go down a row and churn rises; go right and the discount rate rises. Green means the model says the stock is worth more than today's C$33.22, red means less, and the boxed cells are closest to today's price. That's the band the market is betting on.</p>
+  <div class="tablewrap">
+    <table class="grid">
+      <thead><tr><th>Churn ↓ / Discount →</th><th>8%</th><th>9%</th><th>10%</th><th>11%</th><th>12%</th></tr></thead>
+      <tbody>
+        <tr><td class="hd">5%</td><td class="up">124.62</td><td class="up">102.78</td><td class="up">86.88</td><td class="up">74.82</td><td class="up">65.39</td></tr>
+        <tr><td class="hd">7.5%</td><td class="up">107.97</td><td class="up">89.31</td><td class="up">75.71</td><td class="up">65.38</td><td class="up">57.29</td></tr>
+        <tr><td class="hd">9% (reported)</td><td class="up">99.24</td><td class="up">82.23</td><td class="up">69.83</td><td class="up">60.40</td><td class="up">53.01</td></tr>
+        <tr><td class="hd">10%</td><td class="up">93.89</td><td class="up">77.89</td><td class="up">66.21</td><td class="up">57.34</td><td class="up">50.37</td></tr>
+        <tr><td class="hd">12.5%</td><td class="up">81.97</td><td class="up">68.20</td><td class="up">58.14</td><td class="up">50.48</td><td class="up">44.46</td></tr>
+        <tr><td class="hd">15%</td><td class="up">71.90</td><td class="up">59.99</td><td class="up">51.28</td><td class="up">44.63</td><td class="up">39.41</td></tr>
+        <tr><td class="hd">20%</td><td class="up">56.15</td><td class="up">47.09</td><td class="up">40.45</td><td class="up">35.38</td><td class="dn near">31.37</td></tr>
+        <tr><td class="hd">25%</td><td class="up">44.80</td><td class="up">37.74</td><td class="dn near">32.55</td><td class="dn">28.58</td><td class="dn">25.43</td></tr>
+        <tr><td class="hd">30%</td><td class="up near">36.56</td><td class="dn">30.90</td><td class="dn">26.73</td><td class="dn">23.53</td><td class="dn">21.00</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p><strong>How to read it:</strong> even with a harsh 12% discount rate, the price only makes sense if churn is around 20%. At every discount rate from 8% to 12%, the model at reported churn gives C$53 or more.</p>
+
+  <h2 id="why">Is the market right to be scared?</h2>
+  <p>A reverse DCF doesn't prove the stock is cheap. It shows you what you'd have to believe. Reasons the market might be pricing in something bad:</p>
+  <ul>
+    <li><strong>AI disruption.</strong> Investors fear AI tools could make corporate training platforms cheaper or unnecessary. That would show up as higher churn and lower prices.</li>
+    <li><strong>Big customers leaving.</strong> AWS (Amazon) was about 6% of ARR and is winding down, and a Dayforce partnership is ending too. Both hurt reported growth.</li>
+    <li><strong>Growth slowed.</strong> ARR growth fell from about 18% in 2024 to about 9.5% now, although management says underlying growth is about 14%.</li>
+    <li><strong>Stock-based pay.</strong> Adjusted EBITDA leaves out stock-based compensation, which is a real cost. That makes our DCF a bit generous.</li>
+    <li><strong>Control and size.</strong> Intercap owns about 64%, so fewer shares trade freely. Smaller, controlled companies often trade at a discount.</li>
+  </ul>
+  <p>Our lens also blames everything on churn. The market's worry might really be slower new sales or lower margins, and you can run the same reverse trick on those levers.</p>
+
+  <h2 id="todo">What you do next, step by step</h2>
+  <ol class="steps">
+    <li><div><strong>Open <code>Docebo_Reverse_DCF.xlsx</code>.</strong> Read the "Start Here" tab first. Blue cells are numbers you can change. Everything else is a formula.</div></li>
+    <li><div><strong>Check the numbers (Step 2 of the project).</strong> Go to sedarplus.ca, search "Docebo", and open the Q2-2026 MD&amp;A and press release. Tick off each blue number on the Inputs tab. Update the share price to today's price.</div></li>
+    <li><div><strong>Follow the chain.</strong> Look at ARR Model row 17 (ending ARR), then row 22 (revenue), row 26 (EBITDA), row 28 (free cash flow), then DCF C18 (price). Say it out loud: ARR, revenue, profit, cash, today's dollars, price.</div></li>
+    <li><div><strong>Do Goal Seek yourself.</strong> Data → What-If Analysis → Goal Seek. Set cell <code>DCF!C22</code>, to value <code>33.22</code>, by changing <code>Assumptions!C5</code>. You should get about 24.5%, matching the Reverse DCF tab. Then put churn back to 9%.</div></li>
+    <li><div><strong>Build a Data Table yourself.</strong> Rebuild the Sensitivity grid using Data → What-If Analysis → Data Table. Instructions are on "Start Here". Interviewers love that you know this.</div></li>
+    <li><div><strong>Play.</strong> Change one assumption at a time (the margin target, the discount rate, expansion) and watch the implied churn move. Write down which one matters most.</div></li>
+    <li><div><strong>Test it on a real event (early Nov 2026).</strong> When Docebo releases Q3-2026 results, update Inputs (new ARR, cash, debt, price) and log the new implied churn on the Tracker tab. Did the market's bet get more or less scared? That change is your story.</div></li>
+    <li><div><strong>Write the one-pager</strong> (draft below), put it on LinkedIn or in your portfolio, and add the resume line.</div></li>
+  </ol>
+
+  <h2 id="onepager">One-page write-up (draft, ready to edit)</h2>
+  <div class="onepager">
+    <h3>What Docebo's stock price is betting on</h3>
+    <p><strong>The company.</strong> Docebo (TSX: DCBO) sells an AI-powered learning platform by subscription to businesses around the world. It has US$255M of annual recurring revenue growing about 10% a year, 79% gross margins, and US$49M of free cash flow over the last twelve months. The stock trades at C$33, about 2.5× ARR and 13× free cash flow.</p>
+    <p><strong>The question.</strong> Instead of guessing what Docebo is worth, I asked what the current price assumes. I built a 10-year ARR model (starting ARR + new + expansion − churn), turned it into free cash flow using Docebo's own margins, discounted it at 10% with a 2.5% terminal growth rate, and solved for the churn rate that makes the model equal the market price.</p>
+    <p><strong>The finding.</strong> The market price implies Docebo loses about <strong>24.5% of its ARR every year</strong>, which equals a net revenue retention of about 83%. Docebo's reported retention of 99% implies about 9% churn. At reported churn, the model values the shares at about C$70.</p>
+    <p><strong>Sensitivity.</strong> Across discount rates of 8–12%, today's price needs churn of roughly 20–30%. Even the harshest case at reported churn gives C$53 or more.</p>
+    <p><strong>Conclusion.</strong> The market is far more pessimistic than Docebo's reported numbers, most likely because it fears AI will disrupt corporate learning and because big customers like AWS are leaving. If retention holds near 99% and margins keep expanding, the stock looks undervalued. The key thing to watch is net revenue retention in the next results: that's the number that decides who is right.</p>
+    <p class="legend">Illustrative student analysis, not investment advice. Figures from Docebo's public filings; assumptions are my own.</p>
+  </div>
+
+  <h2 id="interview">Interview answers to memorize</h2>
+  <h3>Your 30-second pitch</h3>
+  <p class="pitch" id="pitch">"I built a reverse DCF on Docebo at the customer level. Instead of forecasting a price, I solved for the churn rate the market price implies. At C$33, the market is pricing in about 25% annual ARR churn, while Docebo's 99% net retention implies about 9%. So either the market expects AI disruption to hit retention hard, or the stock is undervalued. I'd watch net revenue retention next quarter to find out."</p>
+  <button class="copy" type="button" id="copyPitch">Copy pitch</button>
+  <dl class="qa">
+    <dt>"Walk me through a DCF."</dt>
+    <dd>Forecast free cash flow for about 10 years. Discount each year back to today using the discount rate. Add a terminal value for the years after that, also discounted. That gives enterprise value. Add cash and subtract debt for equity value, then divide by shares.</dd>
+    <dt>"Why a reverse DCF?"</dt>
+    <dd>Forecasts are guesses. A reverse DCF turns the price into one clear assumption I can check against real data, so I'm testing the market's expectation rather than defending my own.</dd>
+    <dt>"What's the weakest part of your model?"</dt>
+    <dd>The terminal value is over half the value, and it's very sensitive to the discount rate. Also, Docebo doesn't report gross churn, so I backed it out of net retention with an 8% expansion assumption, and adjusted EBITDA excludes stock-based pay.</dd>
+    <dt>"How would you pick the discount rate properly?"</dt>
+    <dd>Use WACC: the cost of equity (risk-free rate + beta × equity risk premium) blended with the after-tax cost of debt, weighted by how much of each the company uses. For a small software company it usually lands around 9–12%, which is why the grid covers that range.</dd>
+  </dl>
+
+  <h3>Resume line</h3>
+  <p>Built a 10-year reverse DCF of Docebo (TSX: DCBO) at the customer level (ARR, churn, expansion, free cash flow) and solved for market-implied churn (~25% vs. ~9% reported) with Goal Seek and sensitivity tables to judge market expectations.</p>
+
+  <h2>Sources</h2>
+  <ul class="src">
+    <li><a href="https://www.theglobeandmail.com/investing/markets/stocks/DCBO-T/pressreleases/3714410/docebo-reports-second-quarter-2026-results/">Docebo Q2-2026 results (Globe and Mail)</a>: ARR, revenue, margins, FCF, cash, debt</li>
+    <li><a href="https://www.businesswire.com/news/home/20260227263046/en/Docebo-Reports-Fourth-Quarter-and-Fiscal-Year-2025-Results">Docebo Q4 / FY2025 results (Business Wire)</a></li>
+    <li><a href="https://www.businesswire.com/news/home/20260508578551/en/Docebo-Reports-First-Quarter-2026-Results">Docebo Q1-2026 results (Business Wire)</a></li>
+    <li><a href="https://www.businesswire.com/news/home/20251107340369/en/Docebo-Reports-Third-Quarter-2025-Results">Docebo Q3-2025 results (Business Wire)</a></li>
+    <li><a href="https://www.theglobeandmail.com/investing/markets/stocks/DCBO/pressreleases/632787/docebo-earnings-call-bookings-strength-amid-cautious-outlook/">Earnings call: 99% net dollar retention, AWS (Globe and Mail)</a></li>
+    <li><a href="https://www.tipranks.com/news/company-announcements/docebo-launches-us70-million-share-buyback-and-reports-strong-preliminary-q2-2026-results">US$70M share buyback, share count (TipRanks)</a></li>
+    <li><a href="https://money.tmx.com/en/quote/DCBO">Share price (TMX Money)</a> · <a href="https://tradingeconomics.com/canada/currency">USD/CAD (Trading Economics)</a></li>
+  </ul>
+</main>
+<script>
+document.getElementById('copyPitch').addEventListener('click', function (e) {
+  var btn = e.currentTarget, text = document.getElementById('pitch').innerText;
+  var done = function () { btn.textContent = 'Copied'; setTimeout(function () { btn.textContent = 'Copy pitch'; }, 1600); };
+  try {
+    navigator.clipboard.writeText(text).then(done, function () { selectPitch(); });
+  } catch (err) { selectPitch(); }
+  function selectPitch() {
+    var r = document.createRange(); r.selectNodeContents(document.getElementById('pitch'));
+    var s = window.getSelection(); s.removeAllRanges(); s.addRange(r); btn.textContent = 'Press Ctrl+C';
+  }
+});
+</script>
