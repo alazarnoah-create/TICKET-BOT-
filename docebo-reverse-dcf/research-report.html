@@ -85,12 +85,34 @@ li { margin: .35rem 0; }
 .src { font-size: .8rem; color: var(--muted); }
 .src a { color: var(--accent); word-break: break-word; }
 .disclaimer { font-size: .78rem; color: var(--muted); border-top: 1px solid var(--rule); margin-top: 2.4rem; padding-top: 1rem; }
+.band .brand { display: flex; align-items: center; gap: 12px; }
+.mono { width: 40px; height: 40px; border: 1.5px solid var(--band-ink); border-radius: 50%; display: grid; place-items: center; font: 700 .95rem/1 var(--display); letter-spacing: .02em; }
+.band .name { font: 700 1.05rem/1.2 var(--display); letter-spacing: .01em; }
+.band .right { text-align: right; display: grid; gap: 3px; }
+@media (max-width: 560px) { .band .right { text-align: left; } }
+.byline { display: flex; flex-wrap: wrap; gap: 8px 28px; margin-top: 16px; padding-block: 12px; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); font-size: .85rem; }
+.byline > div { display: grid; gap: 2px; min-width: 0; }
+.byline .l { font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.byline .v { font-weight: 600; word-break: break-word; }
+.cert { margin-top: 2.4rem; padding: 16px 18px; border: 1px solid var(--rule); border-radius: 8px; background: var(--panel); font-size: .85rem; }
+.cert h3 { margin: 0 0 6px; font-size: 1rem; }
+.sig { font: italic 600 1.35rem/1.2 var(--display); margin-top: 10px; }
+.pagefoot { margin-top: 1.4rem; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 18px; font-size: .75rem; color: var(--muted); border-top: 2px solid var(--ink); padding-top: 10px; }
 </style>
 
 <header class="band">
   <div class="inner">
-    <span class="firm">Independent student equity research · Software / SaaS · Canada</span>
-    <span class="meta">29 Sep 2026 · Prices as of 17 Sep 2026</span>
+    <div class="brand">
+      <div class="mono" aria-hidden="true">NA</div>
+      <div>
+        <div class="name">Noah Alazar Research</div>
+        <div class="firm">Independent Equity Research</div>
+      </div>
+    </div>
+    <div class="right">
+      <span class="firm">Company Note · Software / SaaS · Canada</span>
+      <span class="meta">29 Sep 2026 · Report NAR-2026-01</span>
+    </div>
   </div>
 </header>
 
@@ -98,6 +120,12 @@ li { margin: .35rem 0; }
   <div class="kicker">Docebo Inc. · TSX: DCBO · Reverse DCF</div>
   <h1>The market is betting Docebo loses a quarter of its revenue every year</h1>
   <p class="sub">At C$33.22, Docebo's share price only makes sense if about 24.5% of its recurring revenue cancels each year. The company's reported 99% net revenue retention points to about 9%.</p>
+  <div class="byline">
+    <div><span class="l">Analyst</span><span class="v">Noah Alazar</span></div>
+    <div><span class="l">Contact</span><span class="v">alazarnoah@gmail.com</span></div>
+    <div><span class="l">Method</span><span class="v">Customer-level reverse DCF</span></div>
+    <div><span class="l">Prices as of</span><span class="v">17 Sep 2026 close</span></div>
+  </div>
 
   <div class="opener">
     <ul class="takeaways">
@@ -311,7 +339,14 @@ li { margin: .35rem 0; }
       </ul>
     </div>
   </div>
-  <p class="disclaimer">Independent student analysis prepared for educational purposes. Not investment advice and not a recommendation to buy or sell any security. The author holds no position in Docebo. Model: Docebo_Reverse_DCF.xlsx.</p>
+  <section class="cert" aria-label="Analyst certification">
+    <h3>Analyst certification</h3>
+    <p>I, Noah Alazar, certify that the views expressed in this report accurately reflect my personal views about the subject company and its securities. I have not received and will not receive any compensation for this report. I hold no position in Docebo Inc.</p>
+    <div class="sig">Noah Alazar</div>
+    <div style="font-size:.8rem;color:var(--muted)">Analyst, Noah Alazar Research · alazarnoah@gmail.com</div>
+  </section>
+  <p class="disclaimer"><strong>Important disclosures.</strong> Noah Alazar Research is an independent, non-commercial research project. This report is published for educational purposes only. It is not investment advice or a recommendation to buy or sell any security, and it should not be relied on for investment decisions. Figures are drawn from public company disclosures and news sources; some are derived, as noted in the appendix. Estimates and valuations reflect the analyst's assumptions and may change without notice. Supporting model: Docebo_Reverse_DCF.xlsx.</p>
+  <div class="pagefoot"><span>Noah Alazar Research · Independent Equity Research</span><span>Docebo Inc. (TSX: DCBO) · Report NAR-2026-01</span><span>© 2026 Noah Alazar</span></div>
 </main>
 
 <script>
