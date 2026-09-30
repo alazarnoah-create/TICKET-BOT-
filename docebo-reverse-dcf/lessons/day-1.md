@@ -1,189 +1,196 @@
 # DAY 1: How things grow (and shrink), taught with Docebo's real story
 
-**What you need:** a notebook, a calculator (turn your phone sideways to get the `xʸ` key), and your Excel file `Docebo_Reverse_DCF.xlsx`.
+**Style for every lesson:** each idea is explained in plain words first. Only at the end do you get its name: 🏷️ **This is called: …**
 
-**Rules:**
-- Copy every 📝 box by hand.
-- Try each problem before you look at the answers.
-- Every number has a tag that says where it came from:
-  - **[R]** Reported by Docebo, with the document named.
-  - **[M]** Market data (share price, exchange rate).
-  - **[V]** From the video, not yet checked against a filing.
-  - **[C]** Calculated by us from the numbers above it.
+**You need:** a notebook and a calculator (turn your phone sideways to get the `xʸ` key).
 
----
-
-## Warm-up: Docebo's story in numbers
-
-| When | What happened | Number | Tag |
-|---|---|---|---|
-| Oct 2019 | IPO on the TSX | C$16 a share, ~C$75M raised | [V] |
-| Late 2021 | COVID remote-training boom, stock peaks | ~C$118 | [V] (insiders sold at C$112.00 in Sep 2021 [R]) |
-| Recently | AI fears, higher interest rates | fell to ~C$22 | [V] (52-week low C$19.87 [M]) |
-| 17 Sep 2026 | Price we use in the model | C$33.22 | [M] TSX close |
-| FY2022 → FY2026 | Revenue | $143M → ~$268M | [V] / [R] original FY2026 guidance US$267.5–269.5M |
-| FY2026 | Adjusted EBITDA margin | ~20% | [R] revised guidance, release of 17 Jul 2026 |
-
-⚠️ **One number in the video is wrong.** It says 365Talents cost "$360 million". Docebo reported **US$61.3M** (acquisition release, 20 Jan 2026). The full check is in `lessons/video-fact-check.md`.
+**Number tags:**
+- **[R]** Reported by Docebo
+- **[M]** Market data
+- **[V]** From the video, not yet checked against a filing
+- **[C]** Calculated by us
 
 ---
 
-## Lesson 1: Percent change
+## The story first
+- **Oct 2019:** Docebo's shares first went on sale to the public at **C$16** [V].
+- **Late 2021:** everyone was training staff online during COVID, and the price shot up to about **C$118** [V]. Insiders sold shares at C$112 in Sep 2021 [R].
+- **Then:** people got scared that AI would make training software unnecessary, and borrowing got more expensive. The price fell to about **C$22** [V]. Its lowest price in the past year was C$19.87 [M].
+- **17 Sep 2026:** **C$33.22** [M]. This is the price in your model.
+- **Sales:** about **$143M** in 2022 [V], heading to about **$268M** in 2026 [V]. That matches Docebo's original 2026 forecast of US$267.5–269.5M [R].
 
-**The idea:** a change only means something compared with where you started.
+⚠️ The video says Docebo paid "$360 million" for a French company, 365Talents. **Docebo reported US$61.3M** [R, acquisition release, 20 Jan 2026]. Full check: `video-fact-check.md`.
 
-> 📝 **WRITE THIS DOWN**
-> ```
-> % change = (New − Old) ÷ Old
-> ```
-> *"How much it changed, divided by where it started."*
+---
 
-**Example: Docebo's revenue.** Q2-2025 was US$60.7M [R, Q2-2025 release] and Q2-2026 was US$68.7M [R, Q2-2026 release].
-```
-Step 1: New − Old = 68.7 − 60.7 = 8.0
-Step 2: ÷ Old     = 8.0 ÷ 60.7 = 0.132
-Step 3: × 100     = 13.2% growth [C]
-```
-Docebo's release says revenue was "up 13%". ✓
+## Idea 1: "It went up by how much, compared to what?"
 
-**Example: the crash.** From the ~C$118 peak [V] to ~C$22 [V]:
-```
-(22 − 118) ÷ 118 = −96 ÷ 118 = −0.814 → −81.4% [C]
-```
+Docebo sold **$60.7M** of software in one quarter of 2025 [R] and **$68.7M** in the same quarter of 2026 [R]. That's $8.0M more.
 
-## Lesson 2: The recovery trap
+But is $8M a lot? That depends on where you started. $8M more on top of $60M is a big deal. $8M more on top of $10 billion is nothing. So you compare the change to the starting amount:
 
-**The idea:** after a fall, you need a *bigger* percentage to get back, because you're climbing from a smaller number.
+1. How much did it change? 68.7 − 60.7 = **8.0**
+2. Compared to where it started: 8.0 ÷ 60.7 = **0.132**
+3. Turn it into a percentage: × 100 = **13.2%** [C]
+
+Docebo's own release says sales were "up 13%". ✓
+
+The same steps work for the crash, from ~C$118 [V] to ~C$22 [V]: (22 − 118) ÷ 118 = **−81.4%** [C]
 
 > 📝 **WRITE THIS DOWN**
 > ```
-> Gain needed to recover = drop ÷ (1 − drop)
+> (New − Old) ÷ Old
+> ```
+> 🏷️ **This is called: percent change**
+
+---
+
+## Idea 2: "Why is climbing back so much harder than falling?"
+
+After the crash, the stock was at C$22. To get back to C$118 it needs to gain C$96. But that C$96 is measured against the small number it's at now, C$22, not the big number it fell from:
+```
+96 ÷ 22 = 4.36 → +436% [C]
+```
+It **lost 81% on the way down** but **needs +436% to get back up.** Falling is measured from a big number; climbing back is measured from a small one.
+
+> 📝 **WRITE THIS DOWN**
+> ```
+> Gain needed to get back = drop ÷ (1 − drop)
 > ```
 > *Always ask: "percent of WHAT?"*
+> 🏷️ **This is called: the recovery problem** (investors also call a big fall a **drawdown**)
 
-**Docebo example:** it fell 81.4% from the peak [C]. To get back to ~C$118:
+---
+
+## Idea 3: "How many times bigger did it get?"
+
+Say you bought at C$16 and it went to C$118 [V]. Instead of a percentage, just ask how many times your money multiplied:
 ```
-(118 − 22) ÷ 22 = 96 ÷ 22 = 4.36 → +436% [C]
+118 ÷ 16 = 7.4 times [C]
 ```
-It fell 81% but needs +436% to recover. That's why investors fear big crashes.
-
-## Lesson 3: Multiples, or "baggers"
-
-**The idea:** investors say a stock was a "7-bagger" when it multiplied by 7.
+Every $1 you put in became about $7.40.
 
 > 📝 **WRITE THIS DOWN**
 > ```
-> Multiple = End ÷ Start           % gain = Multiple − 1
+> End ÷ Start
 > ```
+> 🏷️ **This is called: a multiple.** Investors call a stock that multiplies 7 times a **"7-bagger"**, which is the word in the video.
 
-**Docebo:** C$16 IPO [V] → ~C$118 peak [V]: 118 ÷ 16 = **7.4×** [C]. That's the video's "seven bagger", a gain of about 638%.
+---
 
-## Lesson 4: CAGR (the average growth per year)
+## Idea 4: "On average, how fast did it grow each year?"
 
-**The idea:** revenue didn't grow the same amount every year. CAGR (compound annual growth rate) is the single steady rate that gets you from the start to the end.
+Sales went from $143M [V] to $268M [V/R] over 4 years. They didn't grow the same amount each year, so ask: **what one steady yearly growth rate would get you from $143M to $268M in 4 years?**
 
-> 📝 **WRITE THIS DOWN**
-> ```
-> CAGR = (End ÷ Start)^(1/years) − 1
-> ```
-
-**Docebo:** revenue went from $143M in FY2022 [V] to ~$268M in FY2026 [V; matches the original guidance midpoint of US$268.5M, R].
+There's a catch: growth stacks. Each year grows on top of the last year's bigger number, so you can't just divide the total growth by 4.
 ```
-Total growth: 268 ÷ 143 = 1.874 → +87.4% over 4 years [C]  (the video rounds to 88%)
-CAGR:         1.874^(1/4) − 1 = 1.170 − 1 = 17.0% a year [C]
+Step 1: How many times bigger?      268 ÷ 143 = 1.874  (87.4% bigger in total) [C]
+Step 2: Undo the stacking over 4 yrs: 1.874^(1/4) = 1.170
+Step 3: Take away the 1:            1.170 − 1 = 0.170 → 17.0% a year [C]
 ```
 🧮 Calculator: `1.874` `xʸ` `0.25` `=`
 
-Now compare that with **today**: revenue grew 13.2% in the latest quarter [C, Lesson 1] and ARR grew 9.5% [R, Q2-2026 release]. **The growth is slowing.** That's one of the bear-case points in the video.
-
-## Lesson 5: Compounding works on losses too (this is your whole project)
-
-**The idea:** if customers keep 99% of their spending each year, you multiply by 0.99 every year. If they keep 90.3%, you multiply by 0.903.
+Today, sales grow about 13% [C] and recurring sales grow 9.5% a year [R]. **Growth is slowing.**
 
 > 📝 **WRITE THIS DOWN**
 > ```
-> What's left = Today × (retention)^years
+> (End ÷ Start)^(1 ÷ years) − 1
 > ```
+> 🏷️ **This is called: CAGR, the compound annual growth rate.** The "stacking" in Step 2 is called **compounding**.
 
-**Docebo's ARR is US$255.1M** [R, Q2-2026 release]. If Docebo signed no new customers, what's left of it?
+---
 
-| Years | At 99% retention [R, FY2025] | At 90.3% (what the price implies) [C, Excel Reverse DCF!H5] |
+## Idea 5: "Stacking works on losses too" (this is your whole project)
+
+Docebo customers currently pay a combined **$255.1M a year** for their subscriptions [R].
+
+Imagine Docebo never signs another new customer. Each year the existing customers stay, cancel, downgrade or buy more. Suppose that, overall, for every $100 they paid last year, they pay **$99** this year. Then each year you multiply by 0.99.
+
+Now suppose they only paid **$90.30** of every $100. Then you multiply by 0.903 each year.
+
+| After | Keeping $99 of every $100 [R] | Keeping $90.30 of every $100 [C] |
 |---|---|---|
-| 3 | 0.99³ = 0.970 → **US$247.5M** | 0.903³ = 0.736 → **US$187.8M** |
-| 5 | 0.99⁵ = 0.951 → **US$242.6M** | 0.903⁵ = 0.600 → **US$153.2M** |
-| 10 | 0.99¹⁰ = 0.904 → 90% left | 0.903¹⁰ = 0.360 → 36% left |
+| 3 years | $255.1M × 0.99³ = **$247.5M** | $255.1M × 0.903³ = **$187.8M** |
+| 5 years | **$242.6M** | **$153.2M** |
+| 10 years | **90%** still there | only **36%** still there |
 
-📝 **The whole report in one line:** Docebo's numbers keep 90% of today's customer revenue after 10 years. The stock price assumes only 36% is left.
-
-## Lesson 6: Percent vs percentage points (interviewers test this)
-
-**The idea:** when a *percentage* changes, there are two ways to describe it, and mixing them up sounds amateur.
-
-> 📝 **WRITE THIS DOWN**
-> - **Percentage points (pp):** simple subtraction of two percentages.
-> - **Percent (%):** the % change *of* the percentage.
-
-**Docebo:** the EBITDA margin was 16.4% in Q2-2026 [R, Q2-2026 release] and is guided to about 20% for FY2026 [R, 17 Jul 2026 guidance].
-```
-Percentage points: 20 − 16.4 = +3.6 pp [C]
-Percent:           (20 − 16.4) ÷ 16.4 = +22% [C]
-```
-Say: *"The margin rose 3.6 points."* Don't say *"the margin rose 3.6%."*
-
-The video's bigger example: 0.9% margin in 2022 [V] → ~20% in 2026 = **+19.1 percentage points** [C].
-
-## Lesson 7: Rule of 72 (head-math shortcut)
+The first column is what Docebo reports. **The second column is what today's share price assumes** (Excel: Reverse DCF!H5).
 
 > 📝 **WRITE THIS DOWN**
 > ```
-> Years to double ≈ 72 ÷ growth rate
+> What's left = Today × (share kept each year)^years
 > ```
-
-- At the 17.0% CAGR from 2022–26 [C]: 72 ÷ 17 ≈ **4.2 years** to double.
-- At today's 9.5% ARR growth [R]: 72 ÷ 9.5 ≈ **7.6 years** to double.
-
-The slowdown nearly doubles the time it takes to double.
+> 🏷️ **This is called: net revenue retention**, the "$99 of every $100" number. The yearly subscription total ($255.1M) is called **ARR, annual recurring revenue**.
 
 ---
 
-## ✏️ Day 1 practice
-1. Docebo's 52-week low was C$19.87 [M] and the price was C$33.22 on 17 Sep 2026 [M]. What's the % gain?
-2. The 52-week high was C$45.24 [M]. From C$33.22, what % gain gets it back to the high?
-3. ARR was US$219.7M at Dec 2024 [R, Q4-2024 release] and US$238.1M at Dec 2025 [R, Q4-2025 release]. What's the growth?
-4. The IPO price was C$16 [V]. What's the % gain from the IPO to C$33.22?
-5. **Fact-check drill:** 365Talents brings in ~US$9M of revenue [R]. Work out price ÷ revenue using the video's "$360M" and using Docebo's reported US$61.3M [R]. Which multiple is believable for a small software company?
-6. With 90.3% retention and no new customers, how much of today's US$255.1M ARR is left after 5 years?
-7. A margin goes from 18.5% [C, Excel Inputs!B35] to 24% [R, management's 2028 target]. How many percentage points is that? And what % increase?
+## Idea 6: "The margin went up 3.6… 3.6 what?"
 
-🔍 **Expand on it (2 sentences):** the video says EV/ARR is ~1.9×, but your Excel says 2.5× (Inputs!B46). Why could both be "right"? Hint: what price did each use?
+Out of every $100 of sales, Docebo kept about **$16.40 as profit** in Q2-2026 [R]. For 2026 it expects to keep about **$20** of every $100 [R, guidance of 17 Jul 2026].
+
+There are two honest ways to describe that change, and they give different numbers:
+1. **Just subtract:** 20 − 16.4 = **3.6**. The share of profit went up by 3.6 "points".
+2. **Compare to where it started:** 3.6 ÷ 16.4 = **+22%**. The share of profit grew by 22%.
+
+Both are true, but they mean different things. If you say "it went up 3.6%" when you mean 3.6 points, a finance person will notice.
+
+> 📝 **WRITE THIS DOWN**
+> - Subtracting two percentages → say **"points"**.
+> - % change of a percentage → say **"%"**.
+>
+> 🏷️ **This is called: percentage points vs percent.** "Profit per $100 of sales" is called the **margin**. The profit measure here is **adjusted EBITDA**, which you'll learn on Day 4.
 
 ---
+
+## Idea 7: "How long until it doubles?" (a head-math trick)
+
+Take 72 and divide it by the growth rate. The answer is roughly how many years it takes to double.
+- Growing 17% a year (2022–26 average): 72 ÷ 17 ≈ **4.2 years** [C]
+- Growing 9.5% a year (today's subscription growth): 72 ÷ 9.5 ≈ **7.6 years** [C]
+
+> 📝 **WRITE THIS DOWN**
+> ```
+> 72 ÷ growth rate ≈ years to double
+> ```
+> 🏷️ **This is called: the Rule of 72**
+
+---
+
+## ✏️ Practice (try before you peek)
+1. The lowest price in the past year was C$19.87 [M]; on 17 Sep 2026 it was C$33.22 [M]. How much did it go up, compared to where it started?
+2. The highest price in the past year was C$45.24 [M]. From C$33.22, how much must it rise to get back there?
+3. The subscription total was $219.7M at Dec 2024 [R] and $238.1M at Dec 2025 [R]. How much did it grow?
+4. From the C$16 first sale price [V] to C$33.22: how much gain? How many times bigger?
+5. **Fact-check:** 365Talents brings in about $9M of sales a year [R]. How many times its sales did Docebo pay, using the video's $360M? Using the reported $61.3M [R]? Which is believable?
+6. If customers keep only $90.30 of every $100 each year and nobody new joins, what's left of $255.1M after 5 years?
+7. Profit per $100 of sales goes from $18.50 [C, Excel Inputs!B35] to $24 [R, management's 2028 target]. How many points is that? And how many %?
+
+🔍 **Think about it:** the video says investors pay 1.9 times Docebo's subscription total for the company. Your Excel says 2.5 times (Inputs!B46). How can both be right?
 
 ## ✅ Answers
 1. (33.22 − 19.87) ÷ 19.87 = **+67.2%**
 2. (45.24 − 33.22) ÷ 33.22 = **+36.2%**
-3. (238.1 − 219.7) ÷ 219.7 = **+8.4%**. Docebo's Q4-2025 release also says 8.4%. ✓
-4. (33.22 − 16) ÷ 16 = **+107.6%**, so the stock has roughly doubled since its IPO, even after the crash.
-5. Video: 360 ÷ 9 = **40×** revenue. Reported: 61.3 ÷ 9 = **6.8×** revenue. Docebo itself trades at about 2.5× ARR [C], so 40× is not believable. **The video's number is wrong.**
-6. 255.1 × 0.903⁵ = 255.1 × 0.600 = **US$153.2M**. Over 40% of it is gone.
-7. 24 − 18.5 = **+5.5 percentage points**. As a %: 5.5 ÷ 18.5 = **+29.7%**.
-- 🔍 EV/ARR depends on the share price on the day. At C$33.22 it's 2.5×. At C$24, the same maths gives about 1.85× [C], so the video was probably recorded when the stock was cheaper. **Always write down the date of the price you use.**
+3. (238.1 − 219.7) ÷ 219.7 = **+8.4%**. Docebo's release says 8.4% too. ✓
+4. **+107.6%**, and 33.22 ÷ 16 = **2.1 times**. It's still double the first sale price, even after the crash.
+5. 360 ÷ 9 = **40 times** vs 61.3 ÷ 9 = **6.8 times**. Investors pay only about 2.5 times for Docebo itself, so 40 times makes no sense. **The video is wrong.**
+6. 255.1 × 0.903⁵ = **$153.2M**
+7. **5.5 points** (24 − 18.5), which is **+29.7%** (5.5 ÷ 18.5)
+- 🔍 They used share prices from different days. At C$24, the same maths gives about 1.85 times [C]. **Always write down the date of the price.**
 
 ---
 
-## 🧠 Index card (rewrite from memory tomorrow)
+## 🧠 Index card: say the idea, then the name
 ```
-% CHANGE:  (New − Old) ÷ Old            Revenue +13.2% (60.7 → 68.7) [R]
-RECOVER:   drop ÷ (1 − drop)            −81% crash needs +436% [C]
-MULTIPLE:  End ÷ Start                  C$16 → C$118 = 7.4× "bagger" [V]
-CAGR:      (End÷Start)^(1/n) − 1        $143M → $268M = 17%/yr [V]
-LOSSES:    Today × retention^n          10 yrs: 90% left (99%) vs 36% (90.3%)
-POINTS:    16.4% → 20% = +3.6 pp, not +3.6%
-RULE 72:   72 ÷ growth = years to double
+"Change vs where it started"        → percent change        (New−Old)÷Old
+"Why climbing back is harder"       → recovery problem      drop÷(1−drop)
+"How many times bigger"             → multiple ("bagger")   End÷Start
+"One steady yearly growth rate"     → CAGR                  (End÷Start)^(1/n)−1
+"$ kept from existing customers"    → net revenue retention Today×kept^years
+"Subtract two percentages"          → percentage points     16.4%→20% = +3.6 pts
+"Years to double"                   → Rule of 72            72÷growth
 ```
 
 ## 🧠 Report Recap
-- **Headline:** the C$33.22 price [M] implies **90.3% retention** [C, Excel Reverse DCF!H5]; Docebo reports **99%** [R, Q4-2025 call].
-- **Model value:** **C$53.53** at reported numbers [C, Excel DCF!C18].
-- **New from the video, verified:** FY2026 guidance means about a **20% adjusted EBITDA margin** [R, 17 Jul 2026]. Organic growth excluding AWS and Dayforce is about **14%** [R].
-- **Caught an error:** 365Talents cost **US$61.3M**, not $360M [R, 20 Jan 2026].
+- **The hidden bet:** today's price assumes customers keep only **$90.30 of every $100** a year. Docebo reports **$99**. *(Excel: Reverse DCF!H5; 99% is from the Q4-2025 earnings call)*
+- **The model's value:** **C$53.53** a share, vs a price of **C$33.22**. *(Excel: DCF!C18, Inputs!B5)*
+- **Error caught in the video:** 365Talents cost **US$61.3M**, not $360M. *(Acquisition release, 20 Jan 2026)*

@@ -27,6 +27,7 @@ Every lesson uses Docebo's real numbers from this project, taught for a complete
    - Tag every number: [R] reported, [M] market, [V] video-unverified, [C] calculated.
    - If you can't source a number, say so instead of estimating.
 2. Teach it like the reader has never seen finance before: short sentences, one idea at a time.
+   **Idea first, name last:** explain each concept in everyday words without the jargon term, then reveal it with "🏷️ This is called: X".
 3. Show where each number lives, by document or Excel cell.
 4. End with a 🧠 Report Recap: 2–3 facts about the Docebo report, with sources.
 5. Save each lesson as `lessons/day-N.md` and update the Progress line above.

@@ -13,4 +13,5 @@
   - You may also use a figure you verify from a named source.
   - Tag each number as reported, market, video-unverified or calculated, and say where it comes from (document or Excel cell).
 - Explain like the reader is a complete beginner.
+- **Idea first, name last.** Never open with the jargon word. Describe the situation and the idea in everyday words as if the reader has never heard the term, and only then say "🏷️ This is called: X". The same applies to formulas: explain what you're doing in plain steps first, then show the formula.
 - End every answer with a short "🧠 Report Recap": 2–3 facts about the Docebo report, each with its source.
