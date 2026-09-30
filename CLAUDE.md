@@ -9,7 +9,7 @@
 
 **Standing rules for anything about this project:**
 - **Never fabricate or estimate numbers.**
-  - Use only figures already in the project: the Excel Inputs and Sources tabs, `lessons/video-fact-check.md`, or the research report.
+  - Use only figures already in the project: the Excel Inputs and Sources tabs, `lessons/video-fact-check.md`, `lessons/simplywallst-fact-check.md`, or the research report. Figures marked out of date or undated in those files must be labelled that way when used.
   - You may also use a figure you verify from a named source.
   - Tag each number as reported, market, video-unverified or calculated, and say where it comes from (document or Excel cell).
 - Explain like the reader is a complete beginner.
