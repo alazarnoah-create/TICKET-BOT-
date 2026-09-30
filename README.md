@@ -18,6 +18,29 @@ it clicks Get tickets, maxes out the order at 4, clicks Check out, and alerts yo
 
 If Eventbrite shows a CAPTCHA, the bot alerts **Solve the CAPTCHA now!** Solve it in Safari, then pay.
 
+## Install the Mac app
+
+**Easiest (no security warning):** open **Terminal** and paste:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/alazarnoah-create/TICKET-BOT-/HEAD/install.sh | bash
+```
+
+It downloads the bot, builds **Ticket Bot.app** on your Mac, puts it in Applications and opens it.
+Because it's built on your own Mac, macOS opens it without the "Not Opened" warning.
+
+**Or download the disk image:** get
+[TicketBot.dmg](https://github.com/alazarnoah-create/TICKET-BOT-/releases/latest/download/TicketBot.dmg),
+open it and drag **Ticket Bot** onto **Applications**. The first time you open it, macOS says
+*"Ticket Bot" Not Opened* because the app isn't from the App Store. Click **Done**, then go to
+**System Settings → Privacy & Security**, scroll down, click **Open Anyway** and enter your password.
+You only do this once.
+
+**Or build it yourself:** `git clone https://github.com/alazarnoah-create/TICKET-BOT-.git`,
+`cd TICKET-BOT-`, `bash build.sh`. The app and DMG land in `build/`.
+
+Ticket Bot needs **Python 3**. If your Mac doesn't have it, the app says so and takes you to python.org.
+
 ## One-time setup (Mac)
 
 1. In **Safari**, go to eventbrite.ca and **log in**.
@@ -27,10 +50,6 @@ If Eventbrite shows a CAPTCHA, the bot alerts **Solve the CAPTCHA now!** Solve i
    - Close Settings. A **Develop** menu appears at the top. Click it and tick
      **Allow JavaScript from Apple Events**.
    - The first time the bot runs, macOS asks whether **Terminal** may control **Safari**. Click **OK**.
-4. In Terminal, point it at this folder (type `cd `, drag the folder in, press Enter), then run:
-   ```bash
-   bash setup.sh
-   ```
 
 ## Every drop
 
@@ -38,21 +57,23 @@ Tickets go on sale at **6 PM**, often a day or more before the party. Trinity an
 [Instagram (@trinityktown)](https://www.instagram.com/trinityktown/) (e.g. "Tickets for dollar beers go on
 sale Friday at 6PM"). The bot grabs the **next upcoming** Dollar Beers event, whatever night it's for.
 
-Open Terminal, point it at this folder (`cd ` then drag the folder in and press Enter), and run
-this any time before 6 PM:
+Any time before 6 PM, open **Ticket Bot** and pick:
 
-```bash
-bash bot run
-```
+- **Start - wait for the next drop**: waits for the next Tuesday or Saturday at 6 PM.
+- **Start - tickets drop on a different day…**: pick the day Trinity announced (e.g. Friday).
 
-That waits for the next Tuesday or Saturday at 6 PM. If Trinity announces a different day, add it,
-e.g. `bash bot run --day friday`.
+A Terminal window opens and shows what the bot is doing. Leave it open (closing it stops the bot),
+keep the lid open and the Mac plugged in (the bot stops it from sleeping), and don't use Safari while it
+works. When **Tickets in your cart!** goes off, pay with Apple Pay. If the bot can't click (the Safari
+setting above is off), it alerts **GO NOW - buy it yourself!** and you click through by hand.
 
-Leave it running, and don't use Safari while it works. When **Tickets in your cart!** goes off,
-pay with Apple Pay. If the bot can't click (the Safari setting above is off), it alerts
-**GO NOW - buy it yourself!** and you click through by hand.
+The app's menu also has a **practice run** on any event link (don't pay), **check** that the bot can see
+Trinity's events, **test the alert**, and **edit settings**. Settings are kept in
+`~/Library/Application Support/Ticket Bot/config.json`.
 
-Other commands:
+### From Terminal instead
+
+In this folder: `bash bot run` (or `bash bot run --day friday`). Other commands:
 
 - `bash bot next`: shows when the next drop is.
 - `bash bot check`: checks the bot can read the Trinity Social page and lists any Dollar Beers events it sees.
@@ -63,7 +84,7 @@ Other commands:
 ## Optional: phone alert
 
 Install the free **ntfy** app on your phone, subscribe to a hard-to-guess topic name, and put that
-name in `ntfy_topic` in `config.json`. You'll get a push notification at the same time as the alert.
+name in `ntfy_topic` in the settings (**Edit settings** in the app, or `config.json`). You'll get a push notification at the same time as the alert.
 
 ## Settings (`config.json`)
 

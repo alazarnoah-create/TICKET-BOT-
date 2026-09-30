@@ -1,0 +1,37 @@
+name: Mac app
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Ticket Bot.app and TicketBot.dmg
+        run: bash build.sh
+
+      - name: Check the bundled bot runs
+        run: |
+          bash "build/Ticket Bot.app/Contents/Resources/bot/run.sh" next
+          bash "build/Ticket Bot.app/Contents/Resources/bot/run.sh" --help >/dev/null
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: TicketBot-dmg
+          path: build/TicketBot.dmg
+
+      # Pushes to the default branch refresh the download at .../releases/latest/download/TicketBot.dmg
+      - name: Publish release
+        if: github.ref_name == github.event.repository.default_branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete mac-latest --yes --cleanup-tag || true
+          gh release create mac-latest build/TicketBot.dmg --target "$GITHUB_SHA" --latest \
+            --title "Ticket Bot for Mac" --notes-file mac/README.txt

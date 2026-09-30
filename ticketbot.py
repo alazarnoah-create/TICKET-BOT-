@@ -19,9 +19,18 @@ import urllib.request
 from datetime import date, datetime, timedelta
 from pathlib import Path
 
-from playwright.sync_api import Error as PlaywrightError
-from playwright.sync_api import TimeoutError as PlaywrightTimeout
-from playwright.sync_api import sync_playwright
+try:
+    from playwright.sync_api import Error as PlaywrightError
+    from playwright.sync_api import TimeoutError as PlaywrightTimeout
+    from playwright.sync_api import sync_playwright
+except ImportError:  # only the Chrome modes (auto, login) need Playwright; Safari mode runs without it
+    sync_playwright = None
+
+    class PlaywrightError(Exception):
+        pass
+
+    class PlaywrightTimeout(PlaywrightError):
+        pass
 
 HERE = Path(__file__).resolve().parent
 CONFIG_PATH = HERE / "config.json"
@@ -416,6 +425,7 @@ def choose_event(links, cfg, drop):
 
 # ---------------------------------------------------------------- Safari mode
 
+USER_AGENT = "ticketbot/1.0 (personal use)"
 EVENT_LINK = re.compile(r"https://www\.eventbrite\.[a-z.]+/e/[a-z0-9-]+-\d+", re.I)
 
 
@@ -428,11 +438,26 @@ def ssl_context():
         return ssl.create_default_context()
 
 
+def fetch_page(url):
+    """Download a page. Falls back to the Mac's own curl if Python can't make the secure connection."""
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+        return urllib.request.urlopen(req, timeout=10, context=ssl_context()).read().decode("utf-8", "replace")
+    except OSError as exc:
+        try:
+            out = subprocess.run(["curl", "-fsSL", "--max-time", "10", "-A", USER_AGENT, url],
+                                 capture_output=True, timeout=15)
+        except (OSError, subprocess.TimeoutExpired):
+            raise exc from None
+        if out.returncode:
+            raise exc
+        return out.stdout.decode("utf-8", "replace")
+
+
 def organizer_links(cfg):
     """Event links on the organizer page (one plain request, no browser), or None if unreadable."""
     try:
-        req = urllib.request.Request(cfg["organizer_url"], headers={"User-Agent": "ticketbot/1.0 (personal use)"})
-        html = urllib.request.urlopen(req, timeout=10, context=ssl_context()).read().decode("utf-8", "replace")
+        html = fetch_page(cfg["organizer_url"])
     except OSError as exc:
         log(f"Couldn't read the organizer page ({exc}).")
         return None
@@ -698,6 +723,8 @@ def main():
     sub.add_parser("test-alert", help="fire a test notification")
     args = parser.parse_args()
 
+    if args.cmd in ("auto", "login") and sync_playwright is None:
+        sys.exit("This mode needs Playwright. Run 'bash setup.sh' in this folder first.")
     cfg = load_config(args.config)
     if getattr(args, "day", None):
         cfg["drop_days"] = [args.day.lower()]
