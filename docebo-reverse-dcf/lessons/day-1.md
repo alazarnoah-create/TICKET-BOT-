@@ -106,12 +106,12 @@ Docebo customers currently pay a combined **$255.1M a year** for their subscript
 
 Imagine Docebo never signs another new customer. Each year the existing customers stay, cancel, downgrade or buy more. Suppose that, overall, for every $100 they paid last year, they pay **$99** this year. Then each year you multiply by 0.99.
 
-Now suppose they only paid **$90.30** of every $100. Then you multiply by 0.903 each year.
+Now suppose they only paid **$90.20** of every $100. Then you multiply by 0.902 each year.
 
-| After | Keeping $99 of every $100 [R] | Keeping $90.30 of every $100 [C] |
+| After | Keeping $99 of every $100 [R] | Keeping $90.20 of every $100 [C] |
 |---|---|---|
-| 3 years | $255.1M × 0.99³ = **$247.5M** | $255.1M × 0.903³ = **$187.8M** |
-| 5 years | **$242.6M** | **$153.2M** |
+| 3 years | $255.1M × 0.99³ = **$247.5M** | $255.1M × 0.902³ = **$187.2M** |
+| 5 years | **$242.6M** | **$152.3M** |
 | 10 years | **90%** still there | only **36%** still there |
 
 The first column is what Docebo reports. **The second column is what today's share price assumes** (Excel: Reverse DCF!H5).
@@ -162,7 +162,7 @@ Take 72 and divide it by the growth rate. The answer is roughly how many years i
 3. The subscription total was $219.7M at Dec 2024 [R] and $238.1M at Dec 2025 [R]. How much did it grow?
 4. From the C$16 first sale price [V] to C$33.22: how much gain? How many times bigger?
 5. **Fact-check:** 365Talents brings in about $9M of sales a year [R]. How many times its sales did Docebo pay, using the video's $360M? Using the reported $61.3M [R]? Which is believable?
-6. If customers keep only $90.30 of every $100 each year and nobody new joins, what's left of $255.1M after 5 years?
+6. If customers keep only $90.20 of every $100 each year and nobody new joins, what's left of $255.1M after 5 years?
 7. Profit per $100 of sales goes from $18.50 [C, Excel Inputs!B35] to $24 [R, management's 2028 target]. How many points is that? And how many %?
 
 🔍 **Think about it:** the video says investors pay 1.9 times Docebo's subscription total for the company. Your Excel says 2.5 times (Inputs!B46). How can both be right?
@@ -173,7 +173,7 @@ Take 72 and divide it by the growth rate. The answer is roughly how many years i
 3. (238.1 − 219.7) ÷ 219.7 = **+8.4%**. Docebo's release says 8.4% too. ✓
 4. **+107.6%**, and 33.22 ÷ 16 = **2.1 times**. It's still double the first sale price, even after the crash.
 5. 360 ÷ 9 = **40 times** vs 61.3 ÷ 9 = **6.8 times**. Investors pay only about 2.5 times for Docebo itself, so 40 times makes no sense. **The video is wrong.**
-6. 255.1 × 0.903⁵ = **$153.2M**
+6. 255.1 × 0.902⁵ = **$152.3M**
 7. **5.5 points** (24 − 18.5), which is **+29.7%** (5.5 ÷ 18.5)
 - 🔍 They used share prices from different days. At C$24, the same maths gives about 1.85 times [C]. **Always write down the date of the price.**
 
@@ -191,6 +191,6 @@ Take 72 and divide it by the growth rate. The answer is roughly how many years i
 ```
 
 ## 🧠 Report Recap
-- **The hidden bet:** today's price assumes customers keep only **$90.30 of every $100** a year. Docebo reports **$99**. *(Excel: Reverse DCF!H5; 99% is from the Q4-2025 earnings call)*
-- **The model's value:** **C$53.53** a share, vs a price of **C$33.22**. *(Excel: DCF!C18, Inputs!B5)*
+- **The hidden bet:** today's price assumes customers keep only **$90.20 of every $100** a year. Docebo reports **$99**. *(Excel: Reverse DCF!H5; 99% is from the Q4-2025 earnings call)*
+- **The model's value:** **C$53.56** a share, vs a price of **C$33.22**. *(Excel: DCF!C18, Inputs!B5)*
 - **Error caught in the video:** 365Talents cost **US$61.3M**, not $360M. *(Acquisition release, 20 Jan 2026)*

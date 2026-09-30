@@ -22,10 +22,10 @@ Every number the video mentions, checked against what we have from Docebo's own 
 | FedRAMP compliant, government sales from 2027 | ⚠️ Unverified | Not in our files yet. |
 | ~9× forward EBITDA | ⚠️ Different date | Depends on the share price used. |
 | EV/ARR ~1.9× | ⚠️ Different date | At C$33.22 we get **2.5×** (Excel, Inputs!B46). At C$24 the same maths gives 1.85×, so the video likely used a lower price. |
-| Net cash US$74M in 2025 → net debt US$26M in 2026 | ⚠️ Projection | Actual at 30 Jun 2026: borrowings US$88.0M, cash US$45.7M, so **net debt US$42.3M** (release, 17 Jul 2026). |
-| "$60 million to repurchase shares" | ❌ **Out of date** | The buyback was planned at US$70M, but only **US$2.48M** was actually bought (99,332 shares at US$25.00; release, 11 Sep 2026). |
+| Net cash US$74M in 2025 → net debt US$26M in 2026 | ⚠️ Partly | End-2025 cash was about US$74M with no debt (Simply Wall St older snapshot, consistent). Actual at 30 Jun 2026: borrowings US$88.0M, cash US$45.7M, so **net debt US$42.3M** (release, 17 Jul 2026). |
+| "$60 million to repurchase shares" | ✅ **Matches** (corrected; an earlier version wrongly marked this as out of date) | The Jan–Mar 2026 buyback bought 2,941,176 shares for exactly **US$60.0M** at US$20.40 (results, 11 Mar 2026). A *second* offer in Jul–Sep 2026 (up to US$70M) took in only US$2.48M. |
 | Organic growth ~14.5% excluding AWS and Dayforce | ✅ Matches | Q4-2025 call coverage: ~14.5% excluding those headwinds. Q2-2026 release: ~13.9% excluding the largest OEM customer, acquisitions and FX. |
 | Management said 2025 enterprise execution was disappointing | ✅ Consistent | Q4-2025 call coverage: "enterprise softness" (Globe and Mail). |
 | Biggest acquisition ever; little M&A track record | ⚠️ Opinion | This is the video's view; not a number. |
 
-**Lesson:** a YouTube video is a starting point, not a source. Two of its money figures were wrong or out of date. Always trace a number back to the company's own filing.
+**Lesson:** a YouTube video is a starting point, not a source. One of its money figures was badly wrong (the 365Talents price), and several are undated. Always trace a number back to the company's own filing.

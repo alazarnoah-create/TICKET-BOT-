@@ -16,8 +16,8 @@ solve for the **net revenue retention (NRR)** that makes the model's price equal
 | | |
 |---|---|
 | Market price | C$33.22 |
-| Model value at reported numbers (10% discount rate) | C$53.53 |
-| **Market-implied NRR** | **90.3%** (existing customers spend ~9.7% less each year) |
+| Model value at reported numbers (10% discount rate) | C$53.56 (C$34.00 if valued on analysts' 2029 profit margin) |
+| **Market-implied NRR** | **90.2%** (existing customers spend ~9.8% less each year) |
 | Reported NRR (FY2025) | 99% (101% excluding AWS) |
 
 ## Input rules

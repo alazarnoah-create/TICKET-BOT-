@@ -130,6 +130,7 @@ lines = [
     ("- Any 10-year forecast needs assumptions. Here they are only: today's reported levels held flat, management's own 24%-by-2028 margin target, a 10% discount rate and 2.5% terminal growth.", None),
     ("- New-customer ARR over the last 12 months includes ARR from the 365Talents acquisition (Jan 2026), which Docebo does not break out. Organic new ARR is therefore somewhat lower.", None),
     ("- Adjusted EBITDA excludes stock-based pay, restructuring (severance) and acquisition costs. Free cash flow conversion uses FY2025 actual cash, which does include cash severance.", None),
+    ("- BIGGEST CHALLENGE: if long-run cash only equals the net profit analysts expect (13.5% of revenue in 2029), the model value falls to about the market price. See the Sensitivity tab, margin stress test.", None),
 ]
 for i, (t, f) in enumerate(lines, start=1):
     c = g.cell(i, 2, t)
@@ -147,7 +148,7 @@ market = [
     (6, "USD/CAD exchange rate (same day)", 1.3991, '0.0000', "C$ per US$", "REPORTED", "Mid-market rate 17-Sep-2026 (MTFX). Verify on Bank of Canada daily rates."),
     (7, "Shares held by Intercap", 15.9, NUM2, "millions", "REPORTED", "SIB final results, 11-Sep-2026: Intercap owns 15,900,000 shares"),
     (8, "Intercap ownership", 0.637, PCT, "%", "REPORTED", "SIB final results, 11-Sep-2026: approx. 63.7% of shares outstanding"),
-    (9, "Shares outstanding (after buyback)", "=B7/B8", NUM2, "millions", "CALCULATED", "15.9M / 63.7%"),
+    (9, "Shares outstanding (after buyback)", 24.947594, NUM2, "millions", "REPORTED", "SIB final results, 11-Sep-2026: 24,947,594 shares issued and outstanding (cross-check: 15.9M / 63.7% = 24.96M)"),
     (10, "Market capitalization", "=B5*B9", USDM, "C$ m", "CALCULATED", "Price x shares"),
     (11, "Cash & equivalents, 30-Jun-2026", 45.7, USDM, "US$ m", "REPORTED", "Docebo release 17-Jul-2026 (SIB + preliminary Q2-2026 results)"),
     (12, "Cash paid in the buyback (Sep-2026)", 2.4833, USDM, "US$ m", "REPORTED", "SIB final results, 11-Sep-2026: 99,332 shares x US$25.00 = US$2,483,300"),
@@ -485,6 +486,42 @@ for i in range(len(nrrs)):
 for c in "GHIJKLMNOPQRSTUV":
     s.column_dimensions[c].width = 9
 
+# Margin stress test: value at reported NRR for different long-run adj. EBITDA margins
+M0 = 32
+put(s, f"A{M0}", "Margin stress test - value per share (C$) at reported NRR and 10% discount rate", bold=True)
+note(s, f"A{M0 + 1}", "Changes only the long-run adj. EBITDA margin (reached in Year 2, as in the base case). Cash = EBITDA x FY2025 conversion.")
+put(s, "H34", "Inputs for the analyst row", bold=True)
+stress_in = [
+    (35, "Analysts' 2029 revenue (US$m)", 354.4, "Simply Wall St valuation page, 29-Sep-2026 (analyst consensus - MARKET, not reported)"),
+    (36, "Analysts' 2029 net income (US$m)", 48.0, "Simply Wall St valuation page, 29-Sep-2026 (analyst consensus - MARKET, not reported)"),
+    (37, "FY2026 guidance adj. EBITDA midpoint (US$m)", 55.5, "Docebo release 17-Jul-2026: US$54.5M-56.5M (REPORTED)"),
+    (38, "FY2026 guidance revenue midpoint (US$m)", 275.5, "Docebo release 17-Jul-2026: US$274.5M-276.5M (REPORTED)"),
+]
+for r, lab, v, src in stress_in:
+    put(s, f"H{r}", lab)
+    put(s, f"L{r}", v, F_IN, USDM)
+    s[f"L{r}"].comment = Comment(src, "Source")
+    note(s, f"M{r}", src)
+header(s, 34, ["Scenario", "Adj. EBITDA margin", "Cash (FCF) margin", "Value C$", "vs market"])
+scen = [
+    (35, "Analysts' 2029 net profit margin used as the cash margin", "=(L36/L35)/Assumptions!$C$9"),
+    (36, "Today's LTM margin, held forever", "=Inputs!$B$35"),
+    (37, "FY2026 guidance margin, held forever", "=L37/L38"),
+    (38, "Management's 2028 target (base case)", "=Inputs!$B$19"),
+]
+for r, lab, mf in scen:
+    put(s, f"A{r}", lab)
+    put(s, f"B{r}", mf, fmt=PCT)
+    put(s, f"C{r}", f"=B{r}*Assumptions!$C$9", fmt=PCT)
+    marg = f"(Inputs!$B$35+(B{r}-Inputs!$B$35)*'ARR Model'!$C$6:$L$6)*Assumptions!$C$9"
+    f = (f"=(SUMPRODUCT('ARR Model'!$C$19:$L$19,{marg},DCF!$C$5:$L$5)"
+         f"+'ARR Model'!$L$19*B{r}*Assumptions!$C$9*(1+Assumptions!$C$11)/(Assumptions!$C$10-Assumptions!$C$11)*DCF!$L$5"
+         f"+Inputs!$B$13-Inputs!$B$14)/Inputs!$B$9*Inputs!$B$6")
+    put(s, f"D{r}", f, fmt=USD2, bold=True)
+    put(s, f"E{r}", f"=D{r}/Inputs!$B$5-1", fmt=PCT)
+note(s, "A40", "Read it: on analysts' profit, the value is about the market price. On today's or guided margins, it is above. The debate is profit vs adjusted cash.")
+s.column_dimensions["A"].width = 52
+
 # =============================================================== RED FLAGS
 rf = wb.create_sheet("Red Flags")
 widths(rf, {"A": 4, "B": 34, "C": 70, "D": 60})
@@ -492,32 +529,38 @@ put(rf, "A1", "Red flags - what looks sketchy about the company itself", F(bold=
 note(rf, "A2", "Facts only, each with its source. Interpretation is in the research report.")
 header(rf, 4, ["#", "Flag", "The facts", "Source"])
 flags = [
-    ("Buyback nobody wanted", "Announced a US$70M share buyback at US$20.40, citing an undervalued stock; raised the price to US$25.00; "
-     "only 99,332 shares (US$2.48M) were tendered. Intercap tendered 13,351 shares.",
-     "Docebo SIB announcement 17-Jul-2026; price increase 21-Aug-2026; final results 11-Sep-2026"),
-    ("Planned to borrow for it", "The US$70M buyback was to be funded with ~US$10M cash and a US$60M draw on the credit facility.",
-     "Docebo SIB announcement 17-Jul-2026"),
-    ("Debt went up fast", "Credit facility raised from US$50M to US$100M (Feb-2026), then to US$150M. Drew ~US$50M on 14-Jan-2026. "
+    ("Bought back shares far above today's price",
+     "2023: US$100M at US$55.00 (1,818,181 shares). FY2025: US$47.1M at an average US$29.07. Mar-2026: US$60M at US$20.40 (2,941,176 shares; "
+     "oversubscribed - 3,810,842 tendered). H1-2026 market buybacks: US$19.4M at an average US$18.02. Today: about US$23.74 (C$33.22 / 1.3991).",
+     "SIB results 29-Dec-2023 and 11-Mar-2026; FY2025 and Q2-2026 MD&A"),
+    ("Second 2026 buyback flopped", "Jul-2026 offer for up to US$70M at US$20.40, raised to US$25.00 on 21-Aug-2026; only 99,332 shares (US$2.48M) tendered, "
+     "paid from cash with no new borrowing. Intercap tendered 13,351.",
+     "Releases 17-Jul, 21-Aug, 9-Sep and 11-Sep-2026"),
+    ("Owners' equity went negative", "Total equity fell from US$74.1M (31-Dec-2025) to about -US$0.3M (30-Jun-2026), mainly from the 2026 buybacks.",
+     "Q2-2026 financial statements (via search summaries); Simply Wall St 29-Sep-2026"),
+    ("Borrowed to fund deals", "Drew ~US$50M (14-Jan), US$30M (10-Mar) and US$10M (1-Jun-2026) on its credit line; facility raised to US$100M, then US$150M. "
      "Borrowings US$88.0M vs cash US$45.7M at 30-Jun-2026.",
-     "Q1/Q2-2026 MD&A; Docebo release 17-Jul-2026"),
-    ("Growth partly bought", "Acquired 365Talents (France) on 20-Jan-2026 for US$61.3M (US$54.3M cash at closing). Expected ~US$9M revenue in 2026. "
-     "2026 ARR includes acquired ARR, which Docebo does not break out.",
-     "Docebo acquisition release 20-Jan-2026; Q1-2026 preliminary release 21-Apr-2026"),
-    ("Controlled company", "Intercap owns 63.7% (15.9M shares). Outside shareholders cannot outvote it.",
-     "SIB final results 11-Sep-2026"),
-    ("Insiders sold near the top", "In 2021 Intercap, founder Claudio Erba and CEO Alessio Artuffo sold shares at C$112.00 and US$49.67 in secondary offerings. "
-     "The stock is C$33.22 today.",
-     "Docebo secondary offering releases, 2021"),
-    ("Biggest customers leaving", "Largest OEM customer fell from 9.4% of ARR (Mar-2025) to 3.2% (Mar-2026) and 2.5% (Jun-2026). "
-     "Management: AWS churn complete, Dayforce winding down.",
-     "Q1-2026 preliminary release 21-Apr-2026; Q2-2026 release; Q2-2026 call"),
-    ("'Adjusted' hides real costs", "Adjusted EBITDA excludes share-based pay, restructuring, acquisition compensation and transaction costs. "
-     "Severance: US$5.2M in FY2025 and US$6.2M in Q1-2026 alone.",
-     "Docebo MD&A (non-IFRS definitions); FY2025 and Q1-2026 financial statements"),
-    ("Cash flow swings", "Free cash flow was US$27.6M (42% of revenue) in Q1-2026, then US$3.1M (4.5%) in Q2-2026.",
-     "Q1-2026 and Q2-2026 press releases"),
-    ("Growth slowed", "ARR growth fell from 17.8% (Q3-2024) to 8.4% (Q4-2025), then 9.5% (Q2-2026) including the acquisition.",
-     "Q3-2024, Q4-2025 and Q2-2026 press releases"),
+     "Q1/Q2-2026 MD&A; release 17-Jul-2026"),
+    ("Growth partly bought", "Acquired 365Talents on 20-Jan-2026: US$61.3M announced (US$60.4M in the Q1-2026 purchase accounting). "
+     "~US$9M revenue expected in 2026. Headline ARR includes acquired ARR, not broken out.",
+     "Acquisition release 20-Jan-2026; Q1-2026 financial statements; release 21-Apr-2026"),
+    ("2025 profit boosted by a one-off", "FY2025 net income US$37.5M included a US$13.1M income-tax recovery (recognising Italian deferred tax assets). "
+     "Q1-2026: net loss US$1.6M. Q2-2026: net income US$2.3M vs US$3.1M a year earlier.",
+     "FY2025 annual report (40-F); Q1-2026 and Q2-2026 releases"),
+    ("'Adjusted' hides real costs", "Adjusted EBITDA excludes share-based pay, restructuring and deal costs. Severance US$5.2M (FY2025) and US$6.2M (Q1-2026); "
+     "365Talents deal costs US$0.74M (Q1-2026).",
+     "MD&A non-IFRS definitions; FY2025 and Q1-2026 financial statements"),
+    ("Almost the whole leadership team changed", "New CEO (interim Mar-2024, permanent Sep-2024); CFO left Feb-2025 (Brandon Farber CFO Apr-2025); "
+     "CRO left Jul-2025 (Mark Kosoglow joined); new CMO Apr-2025; new CTO May-2025; Chief Product Officer left Q4-2025.",
+     "Docebo releases 22-Nov-2023, 10-Sep-2024, 2-Jan-2025, 8-Apr-2025, 9-May-2025, 8-Aug-2025"),
+    ("Controlled company", "Intercap owns 63.7% (15.9M shares), up from 56.6% before the Mar-2026 buyback. Outside shareholders cannot outvote it.",
+     "SIB results 11-Mar-2026 and 11-Sep-2026"),
+    ("Insiders sold much higher", "In 2021 Intercap, founder Claudio Erba and Alessio Artuffo (then President, now CEO) sold at C$112.00 and US$49.67. "
+     "CEO sold ~5,000 option shares at ~C$31.00 on 13-Aug-2026 (Simply Wall St).",
+     "2021 secondary offering releases; Simply Wall St insider data"),
+    ("Biggest customers leaving", "Largest OEM customer: 9.4% of ARR (Mar-2025) -> 3.2% (Mar-2026) -> 2.5% (Jun-2026). AWS churn complete, Dayforce winding down.",
+     "Release 21-Apr-2026; Q2-2026 release and call"),
+    ("Cash flow swings", "Free cash flow US$27.6M (42% of revenue) in Q1-2026, then US$3.1M (4.5%) in Q2-2026.", "Q1-2026 and Q2-2026 releases"),
 ]
 for i, (flag, facts, src) in enumerate(flags, start=1):
     r = 4 + i
@@ -562,6 +605,11 @@ extra = [
     ("NRR FY2025 (and ex-AWS)", "99% / 101%", "Inputs!B17:B18", "Q4-2025 earnings call coverage, Globe and Mail", "https://www.theglobeandmail.com/investing/markets/stocks/DCBO/pressreleases/632787/docebo-earnings-call-bookings-strength-amid-cautious-outlook/"),
     ("EBITDA margin target 2028", 0.24, "Inputs!B19", "Docebo long-term model (Investing.com coverage)", "https://www.investing.com/news/analyst-ratings/needham-reiterates-docebo-stock-rating-on-efficiency-gains-93CH-4628763"),
     ("Canada 10-year yield", 0.0399, "Inputs!B20", "Trading Economics, 29-Sep-2026", "https://tradingeconomics.com/canada/government-bond-yield"),
+    ("Shares outstanding after Sep-2026 buyback", "24,947,594", "Inputs!B9", "Docebo SIB final results, 11-Sep-2026", "https://finance.yahoo.com/markets/stocks/articles/docebo-inc-announces-final-results-110000945.html"),
+    ("Mar-2026 buyback: 2,941,176 shares, US$60M", "US$20.40", "Red Flags", "Docebo SIB results, 11-Mar-2026", "https://www.businesswire.com/news/home/20260311228312/en/Docebo-Inc.-Announces-Results-of-its-Substantial-Issuer-Bid"),
+    ("2023 buyback: 1,818,181 shares, US$100M", "US$55.00", "Red Flags", "Docebo SIB results, 29-Dec-2023 (6-K)", "https://www.sec.gov/Archives/edgar/data/1829959/000119312523305989/d50362dex991.htm"),
+    ("Analysts' 2029 revenue / net income", "354.4 / 48.0", "Sensitivity!L35:L36", "Simply Wall St valuation page (analyst consensus), 29-Sep-2026", "https://simplywall.st/stocks/ca/software/tsx-dcbo/docebo-shares/valuation"),
+    ("FY2026 guidance: revenue / adj. EBITDA", "274.5-276.5 / 54.5-56.5", "Sensitivity!L37:L38", "Docebo release, 17-Jul-2026", "https://finance.yahoo.com/markets/stocks/articles/docebo-inc-announces-substantial-issuer-103000376.html"),
 ]
 for i, row in enumerate(rows + extra):
     r = 5 + i
