@@ -492,13 +492,17 @@ def safari_js(code):
     return out.stdout.strip()
 
 
+# Seconds to wait before each refresh while tickets aren't on sale: quick at first, then every 30s.
+REFRESH_GAPS = [3, 5, 8, 12, 20, 30]
+
+
 def safari_auto(cfg, run_js, reload, give_up):
     """Drive the open event page: click Get tickets, max out the quantity, click Check out.
     run_js runs JavaScript in the page; reload refreshes it. Returns True once at checkout."""
     want = str(min(int(cfg["quantity"]), MAX_QUANTITY))
     step = STEP_JS.replace("__WANT__", want).replace("__CAPTCHA_ONLY__", "false")
     captcha_check = STEP_JS.replace("__WANT__", want).replace("__CAPTCHA_ONLY__", "true")
-    last, since, captcha_alerted = None, time.time(), False
+    last, since, captcha_alerted, reloads = None, time.time(), False, 0
     while datetime.now() < give_up:
         try:
             status = run_js(step)
@@ -529,9 +533,11 @@ def safari_auto(cfg, run_js, reload, give_up):
                       "The bot carries on after.", cfg["ntfy_topic"])
                 captcha_alerted = True
         elif status in ("no-button", "") or status.startswith("error"):
-            # Not on sale yet: give the page a few seconds to draw the button, then refresh.
-            if time.time() - since > cfg["button_wait_seconds"]:
+            # Not on sale yet (or sold out): refresh, but back off so Eventbrite doesn't see a
+            # flood of reloads - lots of refreshing is what makes it show CAPTCHAs.
+            if time.time() - since > REFRESH_GAPS[min(reloads, len(REFRESH_GAPS) - 1)]:
                 reload()
+                reloads += 1
                 last = None
         elif status == "no-checkout" and time.time() - since > 10:
             alert("Tickets selected", "Click Check out in Safari now, then pay with Apple Pay.", cfg["ntfy_topic"])
@@ -556,8 +562,9 @@ def safari(cfg, args):
     wait_until(heads_up)
     url = cfg["event_url"] or find_event_http(cfg, drop)
     if not args.now:
-        open_in_safari(url or cfg["organizer_url"])
-        alert("2 minutes to go", "Safari has the event open. Check you're logged in to Eventbrite.", cfg["ntfy_topic"])
+        # Just a heads-up: Safari doesn't load Eventbrite until the drop, to keep page loads to a minimum.
+        alert("2 minutes to go", "Safari opens the event at the drop. Be at your Mac to solve any CAPTCHA "
+              "and pay with Apple Pay.", cfg["ntfy_topic"])
 
     wait_until(drop)
     # The event can be posted right at the drop, so keep checking for up to 2 minutes.

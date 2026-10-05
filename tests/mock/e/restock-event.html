@@ -1,0 +1,11 @@
+<!doctype html><html><body>
+<!-- Sold out for 40 seconds after first load, then tickets come back (a restock). -->
+<h1>Dollar Beers University</h1><div id="cta"></div>
+<script>
+  const t0 = +(sessionStorage.t0 ||= Date.now());
+  sessionStorage.loads = +(sessionStorage.loads || 0) + 1;
+  document.title = 'loads=' + sessionStorage.loads;
+  if (Date.now() - t0 < 40000) { cta.innerHTML = '<p>Sold out</p>'; }
+  else { cta.innerHTML = '<button id="buy">Get tickets</button>';
+         buy.onclick = () => { const f = document.createElement('iframe'); f.src = 'checkout.html'; document.body.appendChild(f); }; }
+</script></body></html>

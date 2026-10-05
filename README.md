@@ -6,11 +6,11 @@ it clicks Get tickets, maxes out the order at 4, clicks Check out, and alerts yo
 **What it does**
 
 1. Waits for the next drop. Your Mac stays awake while it waits.
-2. **2 minutes before:** finds this drop's event on the
+2. **2 minutes before:** an alert to get ready, and the bot finds the next Dollar Beers event on the
    [Trinity Social organizer page](https://www.eventbrite.ca/o/trinity-social-38111092183)
-   (the "Dollar Beers" event with the drop's date in its name), opens it in Safari, and alerts you
-   so you can check you're logged in.
-3. **At 6:00 PM on the dot:** opens the event fresh in Safari, refreshes until tickets are on sale,
+   (the soonest upcoming one). Safari stays off Eventbrite until the drop.
+3. **At 6:00 PM on the dot:** opens the event in Safari (it doesn't load Eventbrite before then), refreshes
+   gently until tickets are on sale (after 3, 5, 8, 12, 20 seconds, then every 30),
    clicks **Get tickets**, picks **4** (skipping sold-out ticket types and topping up from the next
    one if needed), and clicks **Check out**.
 4. Alerts you: **Tickets in your cart!** You pay with **Apple Pay** (Touch ID). Apple requires you to
