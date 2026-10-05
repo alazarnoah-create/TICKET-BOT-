@@ -1,0 +1,12 @@
+<!doctype html><html><body>
+<!-- Busy drop: Eventbrite's waiting room for ~12 seconds, then the page lets you in (no reload). -->
+<h1>Dollar Beers University</h1><div id="cta"></div>
+<script>
+  sessionStorage.loads = +(sessionStorage.loads || 0) + 1;
+  document.title = 'loads=' + sessionStorage.loads;
+  cta.innerHTML = "<p>You're now in line. Please don't refresh this page.</p>";
+  setTimeout(() => {
+    cta.innerHTML = '<button id="buy">Get tickets</button>';
+    buy.onclick = () => { const f = document.createElement('iframe'); f.src = 'checkout.html'; document.body.appendChild(f); };
+  }, 12000);
+</script></body></html>

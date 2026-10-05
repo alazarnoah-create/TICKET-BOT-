@@ -7,6 +7,7 @@
 //   "checkout:N"     clicked Check out with N tickets - done
 //   "no-checkout"    tickets chosen but no Check out button found yet
 //   "captcha"        Eventbrite is asking you to prove you're human
+//   "queue"          you're in Eventbrite's waiting room - wait, don't refresh
 // With __CAPTCHA_ONLY__ true it only checks for a CAPTCHA and returns "captcha" or "ok".
 (function () {
   const want = __WANT__;
@@ -36,6 +37,11 @@
     return "captcha";
   }
   if (__CAPTCHA_ONLY__) return "ok";
+
+  // Eventbrite's waiting room on busy drops. Refreshing here would lose your place in line.
+  if (/waiting room|you('|’| a)re (now )?in line|place in line|in the queue|you are in the queue/i.test(pageText)) {
+    return "queue";
+  }
 
   // Ticket quantity controls: a dropdown or a "+" button per ticket type.
   const selects = find("select").filter(enabled);

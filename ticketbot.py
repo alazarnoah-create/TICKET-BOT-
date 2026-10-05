@@ -502,7 +502,7 @@ def safari_auto(cfg, run_js, reload, give_up):
     want = str(min(int(cfg["quantity"]), MAX_QUANTITY))
     step = STEP_JS.replace("__WANT__", want).replace("__CAPTCHA_ONLY__", "false")
     captcha_check = STEP_JS.replace("__WANT__", want).replace("__CAPTCHA_ONLY__", "true")
-    last, since, captcha_alerted, reloads = None, time.time(), False, 0
+    last, since, captcha_alerted, queue_alerted, reloads = None, time.time(), False, False, 0
     while datetime.now() < give_up:
         try:
             status = run_js(step)
@@ -527,7 +527,14 @@ def safari_auto(cfg, run_js, reload, give_up):
             else:
                 alert("Tickets in your cart!", f"{qty} ticket(s) - pay with Apple Pay in Safari now (Touch ID).", cfg["ntfy_topic"])
             return True
-        if status == "captcha":
+        if status == "queue":
+            # In Eventbrite's waiting room: never refresh (that loses your place), and keep waiting.
+            if not queue_alerted:
+                alert("You're in Eventbrite's line", "Don't refresh or touch Safari - the bot carries on "
+                      "when it's your turn.", cfg["ntfy_topic"])
+                queue_alerted = True
+            give_up = max(give_up, datetime.now() + timedelta(minutes=10))
+        elif status == "captcha":
             if not captcha_alerted:
                 alert("Solve the CAPTCHA now!", "Eventbrite wants you to verify - solve it in Safari. "
                       "The bot carries on after.", cfg["ntfy_topic"])
@@ -568,11 +575,16 @@ def safari(cfg, args):
 
     wait_until(drop)
     # The event can be posted right at the drop, so keep checking for up to 2 minutes.
-    deadline = datetime.now() + timedelta(minutes=2)
+    # The event is often only posted at the drop (or a few minutes late), so keep checking for 15 minutes.
+    deadline = datetime.now() + timedelta(minutes=15)
+    checks = 0
     while not url and datetime.now() < deadline:
         url = find_event_http(cfg, drop)
+        checks += 1
         if not url:
-            time.sleep(5)
+            if checks % 10 == 1:
+                log("Tonight's Dollar Beers event isn't on Eventbrite yet - checking every 4 seconds...")
+            time.sleep(4)
     if url and not args.manual:
         open_in_safari(url)
         time.sleep(1.5)
