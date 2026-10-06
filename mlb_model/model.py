@@ -6,8 +6,9 @@ How expected runs are built (a multiplicative "log5"-style model, everything rel
 
     runs = league R/G * offense index * opposing pitching index * park * home/away edge
 
-  offense index   team runs scored per game / league, with its home park taken out, pulled 15%
-                  full season); optionally adjusted for the starter's hand (platoon OPS split)
+  offense index   team runs scored per game / league, with its home park taken out, pulled
+                  toward average (~13% over a full season); optionally adjusted for the
+                  starter's hand (platoon OPS split)
   pitching index  starter for the innings he's expected to throw, bullpen for the rest.
                   Starter = blend of ERA and FIP (or an xFIP-style estimate when HR are unknown),
                   regressed toward league by innings pitched. Bullpen = bullpen ERA if given,
