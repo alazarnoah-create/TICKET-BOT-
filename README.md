@@ -81,3 +81,39 @@ newest Dollar Beers event there.
 
 `bash bot login` then `bash bot auto` runs the older fully automated mode in a separate Chrome
 window. Eventbrite flags it with CAPTCHAs and "unusual activity", so use `run` instead.
+
+## MLB betting model (`mlb_model/`)
+
+A separate tool in this folder: it projects MLB games and prices bets and parlays against the odds.
+No extra installs (plain Python 3.9+).
+
+```bash
+python3 -m mlb_model today                                  # today's games, live from MLB's free Stats API
+python3 -m mlb_model today --date 2026-10-07 --bankroll 200
+python3 -m mlb_model file mlb_model/games/2026-10-06.json   # a slate typed in by hand, works offline
+python3 -m mlb_model backtest --season 2025                 # checks the model on last season
+```
+
+For live odds, get a free key at [the-odds-api.com](https://the-odds-api.com) and run
+`ODDS_API_KEY=yourkey python3 -m mlb_model today`. Or pass `--odds odds.json` with
+`{"Away Team @ Home Team": {"ml": {"away": -115, "home": -105}, "run_line": {"away": [-1.5, 161], "home": [1.5, -196]}, "total": {"line": 6, "over": -115, "under": -105}}}`.
+
+**How it works**
+
+1. **Expected runs** for each side = league runs per game × the batting team's offense × the other
+   side's pitching (starter for the innings he's expected to throw, bullpen for the rest) × park.
+   Season numbers are pulled toward league average by sample size, so a hot 40-inning starter
+   doesn't look like an ace. Home teams get a small edge (about 53% for even teams, like real MLB).
+2. **Score distribution**: each team's runs follow a negative binomial (real MLB scoring is
+   lumpier than a simple bell curve). Ties go to extra innings. Every market comes off that one
+   table: moneyline, run line, totals, and same-game combos with their true joint chance.
+3. **Props**: starter strikeouts (strikeout rate × batters he'll face) and batter home runs.
+4. **Bets**: each bet shows the book's no-vig chance, the model's chance, the expected profit
+   per $1, and a quarter-Kelly stake (max 5% of bankroll). It also lists the best 3-leg
+   same-game parlays per game and long-shot parlays near `--target` (default 50x).
+
+**Read this before betting real money.** Betting markets are sharp. When this model disagrees
+with the line, the line is right more often than not, especially on props, where the model is
+roughest. Each parlay leg stacks the book's edge, and same-game parlays pay less than the legs'
+product shown here. A 50x parlay that the model gives a 2-3% chance still loses about 97 times
+in 100. Bet only what you can afford to lose.
