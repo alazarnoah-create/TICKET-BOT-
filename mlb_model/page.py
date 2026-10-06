@@ -47,8 +47,9 @@ def slate_data(lg: League, entries: list[dict], meta: dict, target: float = 50, 
         a, h = abbr(m.away.name), abbr(m.home.name)
         legs = game_legs(e["label"], a, h, e["odds"]) + prop_legs(e["label"], m, e["props"], lg)
         every += legs
-        best = (search(legs, games, min_legs=3, max_legs=3, top=1)
-                or search(legs, games, min_legs=2, max_legs=2, top=1))
+        # a 3-leg parlay when one is worth it, else the best 2-leg (side + total)
+        best = sorted(search(legs, games, min_legs=3, max_legs=3, top=1)
+                      + search(legs, games, min_legs=2, max_legs=2, top=1), key=lambda p: p.ev, reverse=True)
         out.append({
             "label": f"{a} @ {h}", "info": e["info"], "why": raw.get("why", []), "moves": raw.get("moves", []),
             "away": {"abbr": a, "name": m.away.name, "record": raw["away"].get("record", ""),

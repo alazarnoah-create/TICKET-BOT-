@@ -8,7 +8,7 @@
   "notes": [
     "Built by hand from published previews on 2026-10-06 (the Stats API was unreachable from where this was made).",
     "Team runs: final 2026 regular season. Odds: as published the morning of the game; lines move, re-check.",
-    "Estimates (not published anywhere I could find): Dustin May and Nick Pivetta innings; Tatis/Machado plate appearances."
+    "Estimates: Dustin May and Nick Pivetta season innings; Tatis/Machado plate appearances. May's 3 innings today comes from the books' outs line."
   ],
   "games": [
     {
@@ -94,8 +94,9 @@
         "Both bullpens had Monday off. Atlanta's Fuentes and Iglesias closed out Game 2."
       ],
       "moves": [
-        "Total opened 6.5 (under −118) and dropped to 6 on heavy under money.",
-        "Moneyline near a pick'em: LAD −115 / ATL −105."
+        "Total opened 6.5 (under −118) and dropped to 6 after almost all early money hit the under.",
+        "By first pitch the moneyline was a pick'em (LAD −110 / ATL −109); one report has Atlanta opening −115.",
+        "Public leaned Dodgers: 56–67% of bets."
       ]
     },
     {
@@ -120,8 +121,8 @@
         "ip": 155,
         "era": 4.7,
         "gs": 31,
-        "expected_ip": 4.7,
-        "notes": "ip/gs estimated; 5.65 ERA in 10 starts since joining MIL"
+        "expected_ip": 3.0,
+        "notes": "ip/gs estimated; books' outs line 8.5 (about 3 innings); 5.65 ERA since joining MIL"
       },
       "home_sp": {
         "name": "Nick Pivetta",
@@ -174,18 +175,20 @@
         }
       ],
       "why": [
-        "Milwaukee is the better team (+214 run differential against about +41) and May had a 1.23 ERA in three starts against San Diego this year.",
-        "But May has a 5.65 ERA since the trade, and Megill, Uribe and Ashby each pitched both games; San Diego's bullpen is fully rested.",
-        "Pivetta has a 1.45 ERA in four starts since returning from a five-month elbow injury, but went only 3.1 innings in his Wild Card start.",
-        "Over 7 is the steadiest edge: May's form plus the Brewers' offense (832 runs, 2nd in MLB)."
+        "Milwaukee is the better team (+214 run differential against about +41), and May had a 1.23 ERA in three starts against San Diego this year.",
+        "Books expect a short May start (outs line 8.5, about 3 innings); he hasn't gotten past the 3rd inning in his last 3 starts. That hands the game to a Brewers bullpen whose top three arms each pitched Games 1 and 2, while San Diego's is fully rested.",
+        "Pivetta has a 1.45 ERA in four starts since a five-month elbow injury, but went only 3.1 innings in his Wild Card start.",
+        "Hot night: about 82°F at first pitch under an extreme-heat warning, which helps the ball carry. Over 7 is also the SportsLine model's pick."
       ],
       "moves": [
-        "Padres −136 / Brewers +113 this morning, total 7 (over −109)."
+        "Padres opened −128 and sit −131 to −136: a small move toward San Diego.",
+        "Total is 7 at most books (over −109); one report has it opening 6.5 and moving up. About two-thirds of DraftKings money is on the Over.",
+        "Side money splits conflict between sources, and no clear sharp-money report surfaced."
       ]
     }
   ],
   "headline": "NLDS Game 3s",
-  "notice": "Dodgers–Braves started at 6:00 PM ET, so its pregame prices may be gone. Brewers–Padres starts at 9:30 PM ET. Prices are this morning's published odds; check your app before betting.",
+  "notice": "Dodgers–Braves is under way (started 6:00 PM ET). Brewers–Padres starts 9:30 PM ET. Prices are this morning's odds plus line moves through 6:15 PM ET; check your app before betting.",
   "sources": [
     {
       "name": "MLB.com",
@@ -210,6 +213,18 @@
     {
       "name": "Yahoo Sports",
       "url": "https://sports.yahoo.com/articles/brewers-bullpen-availability-report-nlds-020900574.html"
+    },
+    {
+      "name": "TheSpread",
+      "url": "https://www.thespread.com/mlb-articles/brewers-vs-padres-prediction-october-6-2026/"
+    },
+    {
+      "name": "CBS Sports",
+      "url": "https://www.cbssports.com/betting/news/brewers-vs-padres-nlds-game-3-parlay-picks-home-cooking-should-save-san-diegos-season-for-one-more-game/"
+    },
+    {
+      "name": "Bettors Insider",
+      "url": "https://bettorsinsider.com/mlb/2026/10/06/brewers-vs-padres-game-3-nlds-prediction-can-san-diego-survive-elimination-at-petco-park/"
     }
   ]
 }
