@@ -1,0 +1,547 @@
+<title>MLB Bet Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=Source+Sans+3:wght@400;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a scorebook sheet. Light = printed scorecard (navy-green ink on cool paper, red pencil);
+   dark = the hand-turned outfield scoreboard (deep green, off-white numerals). */
+:root {
+  --paper: #f3f6f4;
+  --card: #ffffff;
+  --ink: #13261c;
+  --muted: #56695f;
+  --rule: #cbd8d0;
+  --grid: #e3ebe6;
+  --accent: #c0182f;
+  --field: #1d5a3b;
+  --good: #1c7646;
+  --good-bg: #e2f2e8;
+  --bad: #a8261c;
+  --bad-bg: #f8e4e1;
+  --chip: #e8eeea;
+  --display: "Big Shoulders Display", "Arial Narrow", "Helvetica Neue", sans-serif;
+  --body: "Source Sans 3", "Helvetica Neue", Arial, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0e271c; --card: #133325; --ink: #f0eee4; --muted: #a9bdb2; --rule: #2b5240;
+    --grid: #1b402f; --accent: #ff7b70; --field: #7fd1a3; --good: #7fdca4; --good-bg: #17432f;
+    --bad: #ff998f; --bad-bg: #4a2422; --chip: #1c4232; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0e271c; --card: #133325; --ink: #f0eee4; --muted: #a9bdb2; --rule: #2b5240;
+  --grid: #1b402f; --accent: #ff7b70; --field: #7fd1a3; --good: #7fdca4; --good-bg: #17432f;
+  --bad: #ff998f; --bad-bg: #4a2422; --chip: #1c4232; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--paper); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.5; }
+.wrap { max-width: 1080px; margin: 0 auto; padding-inline: 16px; padding-block: 24px 64px; display: grid; gap: 40px; }
+h1, h2, h3 { font-family: var(--display); font-weight: 800; line-height: 1.05; text-wrap: balance; margin: 0; letter-spacing: 0.01em; }
+h1 { font-size: clamp(2.6rem, 7vw, 4.2rem); text-transform: uppercase; }
+h2 { font-size: 2rem; text-transform: uppercase; }
+h3 { font-size: 1.45rem; }
+p { margin: 0; }
+a { color: var(--accent); font-weight: 600; }
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.eyebrow { font-family: var(--mono); font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.lede { max-width: 62ch; color: var(--muted); font-size: 1.05rem; }
+header { display: grid; gap: 12px; border-bottom: 3px double var(--rule); padding-bottom: 20px; }
+nav { display: flex; flex-wrap: wrap; gap: 8px; }
+nav a { font-family: var(--mono); font-size: 0.85rem; text-decoration: none; color: var(--ink); background: var(--chip); padding: 6px 12px; border-radius: 999px; }
+.notice { border-left: 4px solid var(--accent); background: var(--card); padding: 12px 16px; max-width: 75ch; }
+section { display: grid; gap: 20px; }
+.games { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 480px), 1fr)); gap: 20px; align-items: start; }
+.game { background: var(--card); border: 1px solid var(--rule); display: grid; gap: 16px; padding: 18px; min-width: 0; }
+.linescore { display: grid; grid-template-columns: 1fr auto auto; gap: 4px 16px; align-items: baseline; border-bottom: 1px solid var(--rule); padding-bottom: 12px; }
+.team { font-family: var(--display); font-size: 1.7rem; font-weight: 800; text-transform: uppercase; }
+.team small { font-family: var(--mono); font-size: 0.75rem; color: var(--muted); font-weight: 400; margin-left: 8px; text-transform: none; }
+.runs { font-family: var(--display); font-size: 2.2rem; font-weight: 800; font-variant-numeric: tabular-nums; text-align: right; }
+.pct { font-family: var(--mono); font-size: 0.95rem; text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; }
+.colhead { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); text-align: right; }
+.meta { font-family: var(--mono); font-size: 0.82rem; color: var(--muted); }
+.bar { height: 10px; display: flex; background: var(--grid); }
+.bar span:first-child { background: var(--field); }
+.bar span:last-child { background: var(--accent); }
+.tbl { overflow-x: auto; position: relative; }
+table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; font-size: 0.92rem; }
+th { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-weight: 400; text-align: right; padding: 6px 8px; border-bottom: 1px solid var(--rule); white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+td { padding: 7px 8px; border-bottom: 1px solid var(--grid); text-align: right; white-space: nowrap; font-family: var(--mono); font-size: 0.86rem; }
+td:first-child { font-family: var(--body); font-size: 0.95rem; font-weight: 600; }
+.pos { color: var(--good); font-weight: 600; }
+.neg { color: var(--bad); }
+.chip { display: inline-block; font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.06em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; }
+.chip.pick { background: var(--good-bg); color: var(--good); }
+.chip.pass { background: var(--chip); color: var(--muted); }
+.why { display: grid; gap: 6px; padding-left: 18px; margin: 0; max-width: 70ch; }
+.ticket { border: 2px dashed var(--rule); padding: 14px 16px; display: grid; gap: 10px; background: var(--paper); }
+.ticket ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-weight: 600; }
+.ticket .odds { font-family: var(--mono); font-weight: 400; color: var(--muted); }
+.stats { display: flex; flex-wrap: wrap; gap: 8px 20px; font-family: var(--mono); font-size: 0.85rem; }
+.stats b { font-family: var(--display); font-size: 1.35rem; font-weight: 800; margin-right: 4px; }
+.big { border: 3px solid var(--ink); background: var(--card); padding: 20px; display: grid; gap: 14px; }
+.big .payout { font-family: var(--display); font-size: clamp(3rem, 10vw, 5rem); font-weight: 800; line-height: 0.9; color: var(--accent); }
+.calc { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+@media (max-width: 860px) { .calc { grid-template-columns: minmax(0, 1fr); } }
+.panel { background: var(--card); border: 1px solid var(--rule); padding: 18px; display: grid; gap: 16px; min-width: 0; }
+.sides { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 520px) { .sides { grid-template-columns: minmax(0, 1fr); } }
+fieldset { border: 0; padding: 0; margin: 0; display: grid; gap: 8px; min-width: 0; }
+legend { font-family: var(--display); font-size: 1.25rem; font-weight: 800; text-transform: uppercase; padding: 0; margin-bottom: 4px; }
+label { display: grid; gap: 2px; font-size: 0.82rem; color: var(--muted); }
+input, select { font: inherit; font-family: var(--mono); font-size: 0.92rem; color: var(--ink); background: var(--paper); border: 1px solid var(--rule); padding: 6px 8px; width: 100%; min-width: 0; }
+.row2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.row3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.inline { display: flex; align-items: center; gap: 8px; font-size: 0.92rem; color: var(--ink); }
+.inline input { width: auto; }
+.hint { font-size: 0.82rem; color: var(--muted); }
+.result-head { display: grid; grid-template-columns: 1fr auto auto; gap: 2px 16px; align-items: baseline; }
+.parlay { border-top: 1px solid var(--rule); padding-top: 12px; display: grid; gap: 6px; }
+.files { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 0 24px; }
+.files div { border-bottom: 1px solid var(--grid); padding: 8px 0; display: grid; gap: 2px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.files code { font-family: var(--mono); font-weight: 600; }
+.steps { display: grid; gap: 10px; padding-left: 22px; margin: 0; max-width: 72ch; }
+.buttons { display: flex; flex-wrap: wrap; gap: 10px; }
+.btn { display: inline-block; text-decoration: none; padding: 10px 16px; border: 2px solid var(--ink); color: var(--ink); font-weight: 700; background: var(--card); }
+.btn.primary { background: var(--ink); color: var(--paper); }
+footer { font-size: 0.85rem; color: var(--muted); max-width: 75ch; border-top: 3px double var(--rule); padding-top: 16px; }
+@media (prefers-reduced-motion: no-preference) { .bar span { transition: width .3s ease; } }
+.notes { display: grid; gap: 6px; }
+.likely { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+@media (max-width: 860px) { .likely { grid-template-columns: minmax(0, 1fr); } }
+.stack { display: grid; gap: 12px; min-width: 0; }
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow" id="eyebrow"></span>
+    <h1>MLB Bet Lab</h1>
+    <p class="lede">Your model's picks for today's games, refreshed every morning, plus a calculator that runs the same model on any game you type in.</p>
+    <span class="meta" id="updated"></span>
+    <nav aria-label="Sections">
+      <a href="#likely">Most likely to hit</a>
+      <a href="#today">Every game</a>
+      <a href="#longshot">~50x ticket</a>
+      <a href="#calculator">Calculator</a>
+      <a href="#code">Open the code</a>
+    </nav>
+  </header>
+  <p class="notice" id="notice" hidden></p>
+
+  <section id="likely" aria-labelledby="likely-h">
+    <h2 id="likely-h">Most likely to hit</h2>
+    <p class="lede">The bets the model gives the best chance of cashing, leaving out ones it thinks are badly overpriced. Likely isn't the same as profitable: these pay less, and one loss wipes out several wins.</p>
+    <div class="likely">
+      <div class="tbl"><table>
+        <thead><tr><th>Bet</th><th>Game</th><th>Price</th><th>Model</th><th>Book fair</th><th>EV / $1</th></tr></thead>
+        <tbody id="safest"></tbody>
+      </table></div>
+      <div class="stack" id="likely-parlays"></div>
+    </div>
+  </section>
+
+  <section id="today" aria-labelledby="today-h">
+    <h2 id="today-h">Every game</h2>
+    <div class="games" id="games"></div>
+  </section>
+
+  <section id="longshot" aria-labelledby="longshot-h">
+    <h2 id="longshot-h">The ~50x ticket</h2>
+    <div class="big">
+      <div class="payout" id="ls-payout"></div>
+      <ol class="steps" id="ls-legs"></ol>
+      <div class="stats" id="ls-stats"></div>
+      <p class="hint"><span id="ls-alt"></span> Even when the model is right, a ticket like this loses far more often than it wins.</p>
+    </div>
+  </section>
+
+  <section id="calculator" aria-labelledby="calc-h">
+    <h2 id="calc-h">Calculator</h2>
+    <p class="lede">The same model as the code, running right here. Pick the teams, type in season numbers and today's odds from your sportsbook app, and the bets update as you type. It starts filled in with one of today's games; pick another from the list.</p>
+    <div class="calc">
+      <form class="panel" id="calc-form" autocomplete="off">
+        <label for="pick-game">Load one of today's games<select id="pick-game"></select></label>
+        <div class="sides">
+          <fieldset>
+            <legend>Away</legend>
+            <label for="a-team">Team<select id="a-team"></select></label>
+            <div class="row3">
+              <label for="a-g">Games<input id="a-g" type="number" inputmode="numeric" value="162"></label>
+              <label for="a-rs">Runs scored<input id="a-rs" type="number" inputmode="numeric" value="832"></label>
+              <label for="a-ra">Runs allowed<input id="a-ra" type="number" inputmode="numeric" value="618"></label>
+            </div>
+            <label for="a-sp">Starting pitcher<input id="a-sp" type="text" value="Dustin May"></label>
+            <div class="row2">
+              <label for="a-era">ERA<input id="a-era" type="number" step="0.01" inputmode="decimal" value="4.70"></label>
+              <label for="a-ip">Innings this season<input id="a-ip" type="number" step="0.1" inputmode="decimal" value="155"></label>
+              <label for="a-fip">FIP (optional)<input id="a-fip" type="number" step="0.01" inputmode="decimal" placeholder="blank = ERA only"></label>
+              <label for="a-xip">Innings today<input id="a-xip" type="number" step="0.1" inputmode="decimal" value="4.7"></label>
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend>Home</legend>
+            <label for="h-team">Team<select id="h-team"></select></label>
+            <div class="row3">
+              <label for="h-g">Games<input id="h-g" type="number" inputmode="numeric" value="162"></label>
+              <label for="h-rs">Runs scored<input id="h-rs" type="number" inputmode="numeric" value="722"></label>
+              <label for="h-ra">Runs allowed<input id="h-ra" type="number" inputmode="numeric" value="681"></label>
+            </div>
+            <label for="h-sp">Starting pitcher<input id="h-sp" type="text" value="Nick Pivetta"></label>
+            <div class="row2">
+              <label for="h-era">ERA<input id="h-era" type="number" step="0.01" inputmode="decimal" value="2.86"></label>
+              <label for="h-ip">Innings this season<input id="h-ip" type="number" step="0.1" inputmode="decimal" value="44"></label>
+              <label for="h-fip">FIP (optional)<input id="h-fip" type="number" step="0.01" inputmode="decimal" placeholder="blank = ERA only"></label>
+              <label for="h-xip">Innings today<input id="h-xip" type="number" step="0.1" inputmode="decimal" value="4.6"></label>
+            </div>
+          </fieldset>
+        </div>
+        <fieldset>
+          <legend>Odds from your app</legend>
+          <div class="row2">
+            <label for="o-aml">Away moneyline<input id="o-aml" type="number" inputmode="numeric" value="113"></label>
+            <label for="o-hml">Home moneyline<input id="o-hml" type="number" inputmode="numeric" value="-136"></label>
+          </div>
+          <div class="row3">
+            <label for="o-arl">Away run line<select id="o-arl"><option value="1.5" selected>+1.5</option><option value="-1.5">−1.5</option></select></label>
+            <label for="o-arlp">Away RL price<input id="o-arlp" type="number" inputmode="numeric" value="-201"></label>
+            <label for="o-hrlp">Home RL price<input id="o-hrlp" type="number" inputmode="numeric" value="165"></label>
+          </div>
+          <div class="row3">
+            <label for="o-tot">Total<input id="o-tot" type="number" step="0.5" inputmode="decimal" value="7"></label>
+            <label for="o-over">Over price<input id="o-over" type="number" inputmode="numeric" value="-109"></label>
+            <label for="o-under">Under price<input id="o-under" type="number" inputmode="numeric" value="-111"></label>
+          </div>
+        </fieldset>
+        <div class="row2">
+          <label class="inline" for="post"><input id="post" type="checkbox" checked> Playoff game</label>
+          <label for="bank">Bankroll ($)<input id="bank" type="number" inputmode="decimal" value="100"></label>
+        </div>
+        <p class="hint">Where to find the numbers: team runs on MLB.com standings ("RS" and "RA"), pitcher ERA and innings on his MLB.com page. "Innings today" is how deep you think he'll go; leave it blank to let the model guess. Odds are American style (−110, +150).</p>
+      </form>
+
+      <div class="panel" id="calc-out" aria-live="polite">
+        <div class="result-head" id="r-head"></div>
+        <div class="bar" id="r-bar" role="img"><span></span><span></span></div>
+        <p class="meta" id="r-total"></p>
+        <div class="tbl"><table>
+          <thead><tr><th>Bet</th><th>Price</th><th>Book fair</th><th>Model</th><th>EV / $1</th><th>Stake</th><th><span class="sr">Parlay</span></th></tr></thead>
+          <tbody id="r-bets"></tbody>
+        </table></div>
+        <div class="parlay" id="r-parlay"><span class="hint">Tick bets above to build a same-game parlay.</span></div>
+        <p class="hint">Stake is a quarter-Kelly bet size on your bankroll, capped at 5%. A dash means the model sees no edge: skip it.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="code" aria-labelledby="code-h">
+    <h2 id="code-h">Open the code</h2>
+    <p class="lede">The code lives on GitHub in your <code>ticket-bot-</code> repo, in a folder called <code>mlb_model</code>. If GitHub asks you to sign in, use the account that owns the repo.</p>
+    <div class="buttons">
+      <a class="btn primary" href="https://github.com/alazarnoah-create/ticket-bot-/tree/claude/lucid-darwin-xclsc6/mlb_model" target="_blank" rel="noopener">View the code on GitHub</a>
+      <a class="btn" href="https://github.com/alazarnoah-create/ticket-bot-/archive/refs/heads/claude/lucid-darwin-xclsc6.zip" target="_blank" rel="noopener">Download it as a ZIP</a>
+    </div>
+    <div class="files">
+      <div><code>model.py</code><span class="hint">The brain: expected runs and the chance of every final score.</span></div>
+      <div><code>parlay.py</code><span class="hint">Builds bets and parlays, including same-game ones.</span></div>
+      <div><code>props.py</code><span class="hint">Strikeout and home run props.</span></div>
+      <div><code>odds.py</code><span class="hint">Odds math: fair odds, expected profit, bet sizing.</span></div>
+      <div><code>statsapi.py</code><span class="hint">Pulls games and stats from MLB's free stats site.</span></div>
+      <div><code>oddsapi.py</code><span class="hint">Pulls live odds (needs a free key).</span></div>
+      <div><code>backtest.py</code><span class="hint">Grades the model on a past season.</span></div>
+      <div><code>games/2026-10-06.json</code><span class="hint">Today's games, typed in from the sources.</span></div>
+    </div>
+    <p class="hint">On a Mac, the downloaded folder also has <strong>MLB Bets.command</strong>: double-click it (first time: right-click → Open) to pull any day's games straight from MLB. That part is optional; this page works without it.</p>
+  </section>
+
+  <footer>
+    <p id="notes"></p>
+    <p>Model picks are estimates, not sure things. Betting markets are sharp, and every parlay leg adds the sportsbook's cut. Bet only what you can afford to lose.</p>
+    <p>Sources: <span id="sources"></span></p>
+  </footer>
+</div>
+
+<script id="slate" type="application/json">__SLATE_JSON__</script>
+<script>
+
+// Same model as mlb_model/model.py and parlay.py, line for line.
+const DISPERSION = 4, MAX_RUNS = 30, HOME_EDGE = 0.035;
+const LG = { rpg: 4.45, era: 4.10 };
+const TEAMS = [
+  ["Arizona Diamondbacks", "ARI", 1.02], ["Athletics", "ATH", 1.04], ["Atlanta Braves", "ATL", 1.01],
+  ["Baltimore Orioles", "BAL", 0.99], ["Boston Red Sox", "BOS", 1.04], ["Chicago Cubs", "CHC", 0.98],
+  ["Chicago White Sox", "CWS", 0.99], ["Cincinnati Reds", "CIN", 1.05], ["Cleveland Guardians", "CLE", 0.97],
+  ["Colorado Rockies", "COL", 1.12], ["Detroit Tigers", "DET", 0.98], ["Houston Astros", "HOU", 1.00],
+  ["Kansas City Royals", "KC", 1.02], ["Los Angeles Angels", "LAA", 1.01], ["Los Angeles Dodgers", "LAD", 1.00],
+  ["Miami Marlins", "MIA", 0.97], ["Milwaukee Brewers", "MIL", 0.98], ["Minnesota Twins", "MIN", 1.00],
+  ["New York Mets", "NYM", 0.96], ["New York Yankees", "NYY", 1.00], ["Philadelphia Phillies", "PHI", 1.02],
+  ["Pittsburgh Pirates", "PIT", 0.98], ["San Diego Padres", "SD", 0.95], ["San Francisco Giants", "SF", 0.96],
+  ["Seattle Mariners", "SEA", 0.92], ["St. Louis Cardinals", "STL", 0.98], ["Tampa Bay Rays", "TB", 0.98],
+  ["Texas Rangers", "TEX", 0.98], ["Toronto Blue Jays", "TOR", 1.00], ["Washington Nationals", "WSH", 1.00],
+];
+
+const regress = (v, mean, n, k) => { const w = n / (n + k); return w * v + (1 - w) * mean; };
+function pitcherEra(p) {
+  if (p.era == null && p.fip == null) return LG.era;
+  if (p.fip == null) return regress(p.era, LG.era, p.ip, 120);
+  const raw = p.era == null ? p.fip : 0.35 * p.era + 0.65 * p.fip;
+  return regress(raw, LG.era, p.ip, 50);
+}
+function starterInnings(p, post) {
+  if (p.xip != null) return p.xip;
+  const ip = p.gs ? Math.min(p.ip / p.gs, 6.2) : 5.5;
+  return post ? ip - 0.4 : ip;
+}
+const half = t => (1 + t.park) / 2;
+const offenseIndex = t => regress(t.rs / t.g / half(t) / LG.rpg, 1, t.g, 25);
+const runsAllowedIndex = t => regress(t.ra / t.g / half(t) / LG.rpg, 1, t.g, 25);
+const bullpenIndex = (t, post) => runsAllowedIndex(t) * (post ? 0.9 : 1);
+function pitchingIndex(sp, team, post) {
+  const known = sp.ip || sp.era != null || sp.fip != null;
+  const s = known ? pitcherEra(sp) / half(team) / LG.era : runsAllowedIndex(team);
+  const share = Math.min(starterInnings(sp, post), 9) / 9;
+  return share * s + (1 - share) * bullpenIndex(team, post);
+}
+function expectedRuns(m) {
+  const env = LG.rpg * m.home.park * (m.post ? 0.95 : 1);
+  return [env * offenseIndex(m.away) * pitchingIndex(m.homeSp, m.home, m.post) * (1 - HOME_EDGE),
+          env * offenseIndex(m.home) * pitchingIndex(m.awaySp, m.away, m.post) * (1 + HOME_EDGE)];
+}
+function lgamma(x) {
+  const c = [0.99999999999980993, 676.5203681218851, -1259.1392167224028, 771.32342877765313,
+    -176.61502916214059, 12.507343278686905, -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7];
+  if (x < 0.5) return Math.log(Math.PI / Math.abs(Math.sin(Math.PI * x))) - lgamma(1 - x);
+  x -= 1; let a = c[0]; const t = x + 7.5;
+  for (let i = 1; i < 9; i++) a += c[i] / (x + i);
+  return 0.5 * Math.log(2 * Math.PI) + (x + 0.5) * Math.log(t) - t + Math.log(a);
+}
+function runsPmf(mean) {
+  const r = DISPERSION, p = r / (r + mean), out = [];
+  for (let k = 0; k <= MAX_RUNS; k++) out.push(Math.exp(lgamma(k + r) - lgamma(r) - lgamma(k + 1) + r * Math.log(p) + k * Math.log(1 - p)));
+  const s = out.reduce((a, b) => a + b, 0);
+  return out.map(x => x / s);
+}
+function scoreGrid(ma, mh) {
+  const pa = runsPmf(ma), ph = runsPmf(mh), n = MAX_RUNS + 2;
+  const grid = Array.from({ length: n }, () => new Float64Array(n));
+  const hx = Math.min(0.7, Math.max(0.3, 0.52 + 0.5 * (mh - ma) / (mh + ma)));
+  for (let a = 0; a <= MAX_RUNS; a++) for (let h = 0; h <= MAX_RUNS; h++) {
+    const p = pa[a] * ph[h];
+    if (a === h) { grid[a][h + 1] += p * hx; grid[a + 1][h] += p * (1 - hx); } else grid[a][h] += p;
+  }
+  return grid;
+}
+function prob(grid, ...conds) {
+  let s = 0;
+  for (let a = 0; a < grid.length; a++) for (let h = 0; h < grid.length; h++)
+    if (grid[a][h] && conds.every(c => c(a, h))) s += grid[a][h];
+  return s;
+}
+function fairTotal(grid) {
+  let best = 2.5, gap = 9;
+  for (let x = 5; x < 30; x++) {
+    const line = x / 2, d = Math.abs(prob(grid, (a, h) => a + h > line) - prob(grid, (a, h) => a + h < line));
+    if (d < gap) { gap = d; best = line; }
+  }
+  return best;
+}
+const toDec = am => 1 + (am > 0 ? am / 100 : 100 / -am);
+const toAm = d => d >= 2 ? Math.round((d - 1) * 100) : Math.round(-100 / (d - 1));
+const implied = am => 1 / toDec(am);
+const evOf = (p, am, push) => p * (toDec(am) - 1) - (1 - p - push);
+function kelly(p, am) {
+  const b = toDec(am) - 1, full = (b * p - (1 - p)) / b;
+  return Math.max(0, Math.min(0.05, full * 0.25));
+}
+
+// ---- today's slate, drawn from the JSON the model wrote ----
+const S = JSON.parse(document.getElementById("slate").textContent);
+LG.rpg = S.league.rpg; LG.era = S.league.era;
+const $ = id => document.getElementById(id);
+const fmtAm = am => (am > 0 ? "+" : "−") + Math.abs(am);
+const pct = x => (100 * x).toFixed(1) + "%";
+const pct0 = x => Math.round(100 * x) + "%";
+const sign = x => (x >= 0 ? "+" : "−") + Math.abs(100 * x).toFixed(1) + "%";
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const CHIP = { pick: "pick", thin: "thin", pass: "pass" };
+
+function niceDate(iso) {
+  const [y, m, d] = iso.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d, 12)).toLocaleDateString("en-US",
+    { weekday: "short", month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
+}
+function ticket(p, label) {
+  return `<div class="ticket"><span class="eyebrow">${esc(label)}</span>
+    <ol>${p.legs.map(l => `<li>${esc(l.name)} <span class="odds">${fmtAm(l.odds)}</span></li>`).join("")}</ol>
+    <div class="stats"><span><b>${fmtAm(toAm(p.payout))}</b>if the book multiplies</span>
+    <span><b>${pct0(p.hit)}</b>model hit chance</span></div>
+    ${p.same_game ? `<p class="hint">Same-game legs: your app will price this a bit lower.</p>` : ""}</div>`;
+}
+function gameCard(g) {
+  const side = t => `<span class="team">${esc(t.abbr)}<small>${esc(t.sp)} (${esc(t.hand)})${t.record ? " · " + esc(t.record) : ""}</small></span>
+    <span class="runs">${t.runs.toFixed(2)}</span><span class="pct">${pct(t.win)}</span>`;
+  const bets = g.bets.map(b => `<tr><td>${esc(b.name)}</td><td>${fmtAm(b.odds)}</td><td>${b.fair ? pct(b.fair) : "—"}</td>
+    <td>${pct(b.model)}</td><td class="${b.ev >= 0 ? "pos" : "neg"}">${sign(b.ev)}</td>
+    <td><span class="chip ${b.tag === "pick" ? "pick" : "pass"}">${CHIP[b.tag]}</span></td></tr>`).join("");
+  const list = (title, items) => items.length ? `<div class="notes"><span class="eyebrow">${title}</span>
+    <ul class="why">${items.map(x => `<li>${esc(x)}</li>`).join("")}</ul></div>` : "";
+  return `<article class="game" aria-label="${esc(g.away.name)} at ${esc(g.home.name)}">
+    <span class="meta">${esc(g.info)}</span>
+    <div class="linescore"><span></span><span class="colhead">Proj. runs</span><span class="colhead">Win</span>${side(g.away)}${side(g.home)}</div>
+    <div class="bar" role="img" aria-label="Win chance: ${esc(g.away.abbr)} ${pct(g.away.win)}, ${esc(g.home.abbr)} ${pct(g.home.win)}">
+      <span style="width:${pct(g.away.win)}"></span><span style="width:${pct(g.home.win)}"></span></div>
+    <p class="meta">Fair total ${g.fair_total}${g.posted_total != null ? " · posted total " + g.posted_total : ""}</p>
+    ${bets ? `<div class="tbl"><table><thead><tr><th>Bet</th><th>Price</th><th>Book fair</th><th>Model</th><th>EV / $1</th><th></th></tr></thead>
+      <tbody>${bets}</tbody></table></div>` : `<p class="hint">No odds found for this game yet.</p>`}
+    ${list("Why", g.why)}${list("Line movement", g.moves)}
+    ${g.parlay ? ticket(g.parlay, g.parlay.legs.length + "-leg parlay") : ""}
+  </article>`;
+}
+function drawSlate() {
+  $("eyebrow").textContent = niceDate(S.date) + (S.headline ? " · " + S.headline : "");
+  $("updated").textContent = "Updated " + new Date(S.updated).toLocaleString("en-US",
+    { timeZone: "America/New_York", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) + " ET";
+  $("notice").hidden = !S.notice;
+  $("notice").textContent = S.notice || "";
+  if (!S.games.length) {
+    for (const id of ["likely", "longshot"]) $(id).hidden = true;
+    $("games").innerHTML = `<p class="lede">No MLB games today.${S.notes.length ? " " + esc(S.notes.join(" ")) : ""}</p>`;
+  } else {
+    $("games").innerHTML = S.games.map(gameCard).join("");
+    $("safest").innerHTML = S.safest.map(b => `<tr><td>${esc(b.name)}</td><td>${esc(b.game)}</td><td>${fmtAm(b.odds)}</td>
+      <td><b>${pct(b.model)}</b></td><td>${b.fair ? pct(b.fair) : "—"}</td><td class="${b.ev >= 0 ? "pos" : "neg"}">${sign(b.ev)}</td></tr>`).join("")
+      || `<tr><td colspan="6">Nothing the model rates above 55% today.</td></tr>`;
+    $("likely-parlays").innerHTML = S.likeliest.map((p, i) => ticket(p, i ? "Also likely" : "Most likely parlay")).join("");
+    const big = S.longshots[0];
+    if (!big) $("longshot").hidden = true;
+    else {
+      $("ls-payout").textContent = "≈" + Math.round(big.payout) + "x";
+      $("ls-legs").innerHTML = big.legs.map(l => `<li>${esc(l.name)} (${fmtAm(l.odds)})</li>`).join("");
+      $("ls-stats").innerHTML = `<span><b>${fmtAm(toAm(big.payout))}</b>if the book multiplies the legs</span>
+        <span><b>${pct(big.hit)}</b>model hit chance (about 1 in ${Math.round(1 / big.hit)})</span>`;
+      const alt = S.longshots[1];
+      $("ls-alt").textContent = (big.same_game ? "Your app prices same-game legs together, so expect a lower payout. " : "")
+        + (alt ? `Next best: ${alt.legs.map(l => l.name).join(" + ")} (about ${Math.round(alt.payout)}x, ${pct(alt.hit)}).` : "");
+    }
+  }
+  $("notes").textContent = S.notes.join(" ");
+  $("sources").innerHTML = S.sources.map(s => typeof s === "string" ? esc(s)
+    : `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.name)}</a>`).join(" · ");
+}
+
+// ---- calculator ----
+const num = id => { const v = $(id).value.trim(); return v === "" ? null : Number(v); };
+const picked = new Set();
+for (const side of ["a", "h"]) {
+  const sel = $(side + "-team");
+  for (const [name, abbr] of TEAMS) sel.add(new Option(name, abbr));
+}
+S.games.forEach((g, i) => $("pick-game").add(new Option(`${g.away.abbr} @ ${g.home.abbr} · ${g.away.sp} vs ${g.home.sp}`, i)));
+$("pick-game").closest("label").hidden = !S.games.length;
+function loadGame(i) {
+  const c = S.games[i] && S.games[i].calc;
+  if (!c) return;
+  for (const [side, d] of [["a", c.away], ["h", c.home]]) {
+    if (TEAMS.some(t => t[1] === d.abbr)) $(side + "-team").value = d.abbr;
+    for (const [k, v] of Object.entries({ g: d.g, rs: d.rs, ra: d.ra, sp: d.sp, era: d.era, ip: d.ip, fip: d.fip, xip: d.xip }))
+      $(`${side}-${k}`).value = v ?? "";
+  }
+  const o = c.odds;
+  $("o-aml").value = o.aml ?? ""; $("o-hml").value = o.hml ?? "";
+  $("o-arl").value = o.arl != null && o.arl < 0 ? "-1.5" : "1.5";
+  $("o-arlp").value = o.arlp ?? ""; $("o-hrlp").value = o.hrlp ?? "";
+  $("o-tot").value = o.tot ?? ""; $("o-over").value = o.over ?? ""; $("o-under").value = o.under ?? "";
+  $("post").checked = !!c.post;
+  picked.clear();
+  render();
+}
+const teamOf = side => {
+  const t = TEAMS.find(x => x[1] === $(side + "-team").value);
+  return { name: t[0], abbr: t[1], park: t[2], g: num(side + "-g") || 162, rs: num(side + "-rs") || 0, ra: num(side + "-ra") || 0 };
+};
+const spOf = side => ({ name: $(side + "-sp").value.trim() || "Starter", era: num(side + "-era"), ip: num(side + "-ip") || 0,
+  fip: num(side + "-fip"), xip: num(side + "-xip"), gs: null });
+
+function legs(A, H) {
+  const out = [], aml = num("o-aml"), hml = num("o-hml"), spread = Number($("o-arl").value);
+  const arlp = num("o-arlp"), hrlp = num("o-hrlp"), tot = num("o-tot"), ov = num("o-over"), un = num("o-under");
+  if (aml) out.push({ key: "aml", mk: "ml", side: "side", name: A + " ML", odds: aml, win: (a, h) => a > h });
+  if (hml) out.push({ key: "hml", mk: "ml", side: "side", name: H + " ML", odds: hml, win: (a, h) => h > a });
+  if (arlp) out.push({ key: "arl", mk: "rl", side: "side", name: `${A} ${spread > 0 ? "+" : "−"}1.5`, odds: arlp,
+    win: (a, h) => (a - h) + spread > 0, push: (a, h) => (a - h) + spread === 0 });
+  if (hrlp) out.push({ key: "hrl", mk: "rl", side: "side", name: `${H} ${spread > 0 ? "−" : "+"}1.5`, odds: hrlp,
+    win: (a, h) => (h - a) - spread > 0, push: (a, h) => (h - a) - spread === 0 });
+  if (tot != null && ov) out.push({ key: "ov", mk: "tot", side: "tot", name: "Over " + tot, odds: ov, win: (a, h) => a + h > tot, push: (a, h) => a + h === tot });
+  if (tot != null && un) out.push({ key: "un", mk: "tot", side: "tot", name: "Under " + tot, odds: un, win: (a, h) => a + h < tot, push: (a, h) => a + h === tot });
+  return out;
+}
+
+function render() {
+  const away = teamOf("a"), home = teamOf("h");
+  const m = { away, home, awaySp: spOf("a"), homeSp: spOf("h"), post: $("post").checked };
+  if (!away.rs || !away.ra || !home.rs || !home.ra) {
+    $("r-head").textContent = "Fill in runs scored and allowed for both teams.";
+    return;
+  }
+  const [ma, mh] = expectedRuns(m), grid = scoreGrid(ma, mh);
+  const hw = prob(grid, (a, h) => h > a), aw = 1 - hw;
+  $("r-head").innerHTML = `<span></span><span class="colhead">Proj. runs</span><span class="colhead">Win</span>
+    <span class="team">${away.abbr}<small>${esc(m.awaySp.name)}</small></span><span class="runs">${ma.toFixed(2)}</span><span class="pct">${pct(aw)}</span>
+    <span class="team">${home.abbr}<small>${esc(m.homeSp.name)}</small></span><span class="runs">${mh.toFixed(2)}</span><span class="pct">${pct(hw)}</span>`;
+  const bar = $("r-bar");
+  bar.children[0].style.width = pct(aw); bar.children[1].style.width = pct(hw);
+  bar.setAttribute("aria-label", `Win chance: ${away.abbr} ${pct(aw)}, ${home.abbr} ${pct(hw)}`);
+  const tot = num("o-tot");
+  $("r-total").textContent = `Fair total ${fairTotal(grid)}` + (tot != null ? ` · posted total ${tot}` : "");
+
+  const bank = num("bank") || 0, L = legs(away.abbr, home.abbr);
+  const rows = L.map(l => {
+    const twin = L.find(x => x.mk === l.mk && x !== l);
+    const fair = twin ? implied(l.odds) / (implied(l.odds) + implied(twin.odds)) : null;
+    const p = prob(grid, l.win), push = l.push ? prob(grid, l.push) : 0;
+    const ev = evOf(p, l.odds, push), stake = kelly(push < 1 ? p / (1 - push) : 0, l.odds) * bank;
+    l.p = p;
+    return `<tr><td>${l.name}</td><td>${fmtAm(l.odds)}</td><td>${fair ? pct(fair) : "—"}</td><td>${pct(p)}</td>
+      <td class="${ev >= 0 ? "pos" : "neg"}">${sign(ev)}</td><td>${stake >= 0.01 ? "$" + stake.toFixed(2) : "—"}</td>
+      <td><input type="checkbox" id="pick-${l.key}" data-key="${l.key}" aria-label="Add ${l.name} to parlay" ${picked.has(l.key) ? "checked" : ""}></td></tr>`;
+  });
+  $("r-bets").innerHTML = rows.join("") || `<tr><td colspan="7">Type in today's odds to see bets.</td></tr>`;
+
+  const chosen = L.filter(l => picked.has(l.key));
+  const box = $("r-parlay");
+  if (chosen.length < 2) { box.innerHTML = `<span class="hint">Tick 2 or more bets above to build a same-game parlay.</span>`; return; }
+  const sides = chosen.map(l => l.side);
+  if (new Set(sides).size < sides.length) { box.innerHTML = `<span class="hint">Pick at most one side bet (moneyline or run line) and one total.</span>`; return; }
+  const payout = chosen.reduce((d, l) => d * toDec(l.odds), 1);
+  let hit = 0, mult = 0;
+  for (let a = 0; a < grid.length; a++) for (let h = 0; h < grid.length; h++) {
+    const p = grid[a][h]; if (!p) continue;
+    let x = 1, clean = true;
+    for (const l of chosen) {
+      if (l.win(a, h)) x *= toDec(l.odds);
+      else if (l.push && l.push(a, h)) clean = false;
+      else { x = 0; clean = false; break; }
+    }
+    if (clean) hit += p; mult += p * x;
+  }
+  box.innerHTML = `<span class="eyebrow">Your parlay</span>
+    <div class="stats"><span><b>${fmtAm(toAm(payout))}</b>if the book multiplies</span><span><b>${pct(hit)}</b>model hit chance</span>
+    <span><b class="${mult - 1 >= 0 ? "pos" : "neg"}">${sign(mult - 1)}</b>model EV per $1</span></div>
+    <span class="hint">Your app prices same-game parlays a bit lower than this, because these legs are linked.</span>`;
+}
+
+$("pick-game").addEventListener("change", e => { e.stopPropagation(); loadGame(Number(e.target.value)); });
+$("calc-form").addEventListener("input", e => { if (e.target.id !== "pick-game") render(); });
+$("calc-form").addEventListener("change", e => { if (e.target.id !== "pick-game") render(); });
+$("calc-form").addEventListener("submit", e => e.preventDefault());
+$("r-bets").addEventListener("change", e => {
+  const k = e.target.dataset && e.target.dataset.key;
+  if (!k) return;
+  e.target.checked ? picked.add(k) : picked.delete(k);
+  render();
+});
+drawSlate();
+if (S.games.length) loadGame(0); else render();
+</script>

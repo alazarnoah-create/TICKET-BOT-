@@ -1,7 +1,10 @@
 {
   "date": "2026-10-06",
   "postseason": true,
-  "league": {"rpg": 4.45, "era": 4.10},
+  "league": {
+    "rpg": 4.45,
+    "era": 4.1
+  },
   "notes": [
     "Built by hand from published previews on 2026-10-06 (the Stats API was unreachable from where this was made).",
     "Team runs: final 2026 regular season. Odds: as published the morning of the game; lines move, re-check.",
@@ -10,41 +13,203 @@
   "games": [
     {
       "info": "NLDS Game 3, series 1-1 | 6:00 PM ET, Truist Park, FS1",
-      "away": {"name": "Los Angeles Dodgers", "games": 162, "runs_scored": 801, "runs_allowed": 600,
-               "record": "100-62"},
-      "home": {"name": "Atlanta Braves", "games": 162, "runs_scored": 742, "runs_allowed": 626,
-               "record": "94-68"},
-      "away_sp": {"name": "Yoshinobu Yamamoto", "hand": "R", "ip": 185, "era": 2.53, "fip": 3.42,
-                  "k": 182, "whip": 0.87, "expected_ip": 6.0,
-                  "notes": "14-9; books price 18+ outs at -163, so ~6 innings"},
-      "home_sp": {"name": "Chris Sale", "hand": "L", "ip": 162.67, "era": 2.16, "k": 200, "bb": 31,
-                  "whip": 0.98, "gs": 27, "expected_ip": 5.9,
-                  "notes": "14-9, 6.0 IP per start; HR allowed not found, so FIP uses league HR rate"},
-      "odds": {"ml": {"away": -115, "home": -105},
-               "run_line": {"away": [-1.5, 161], "home": [1.5, -196]},
-               "total": {"line": 6, "over": -115, "under": -105}},
+      "away": {
+        "name": "Los Angeles Dodgers",
+        "games": 162,
+        "runs_scored": 801,
+        "runs_allowed": 600,
+        "record": "100-62"
+      },
+      "home": {
+        "name": "Atlanta Braves",
+        "games": 162,
+        "runs_scored": 742,
+        "runs_allowed": 626,
+        "record": "94-68"
+      },
+      "away_sp": {
+        "name": "Yoshinobu Yamamoto",
+        "hand": "R",
+        "ip": 185,
+        "era": 2.53,
+        "fip": 3.42,
+        "k": 182,
+        "whip": 0.87,
+        "expected_ip": 6.0,
+        "notes": "14-9; books price 18+ outs at -163, so ~6 innings"
+      },
+      "home_sp": {
+        "name": "Chris Sale",
+        "hand": "L",
+        "ip": 162.67,
+        "era": 2.16,
+        "k": 200,
+        "bb": 31,
+        "whip": 0.98,
+        "gs": 27,
+        "expected_ip": 5.9,
+        "notes": "14-9, 6.0 IP per start; HR allowed not found, so FIP uses league HR rate"
+      },
+      "odds": {
+        "ml": {
+          "away": -115,
+          "home": -105
+        },
+        "run_line": {
+          "away": [
+            -1.5,
+            161
+          ],
+          "home": [
+            1.5,
+            -196
+          ]
+        },
+        "total": {
+          "line": 6,
+          "over": -115,
+          "under": -105
+        }
+      },
       "props": [
-        {"kind": "strikeouts", "pitcher": "home", "line": 7.5, "over": 111, "under": -152},
-        {"kind": "strikeouts", "pitcher": "away", "line": 6.5, "over": 133, "under": -138}
+        {
+          "kind": "strikeouts",
+          "pitcher": "home",
+          "line": 7.5,
+          "over": 111,
+          "under": -152
+        },
+        {
+          "kind": "strikeouts",
+          "pitcher": "away",
+          "line": 6.5,
+          "over": 133,
+          "under": -138
+        }
+      ],
+      "why": [
+        "Sale held the Dodgers to 2 earned runs in 16 innings this year, including an 11-strikeout shutout on Aug 27.",
+        "The Dodgers went right-handed against him: Ohtani dropped to 5th (cold since coming off the IL); Kiké and Rojas start over Muncy and Edman.",
+        "Yamamoto has a 0.55 ERA in three career starts against Atlanta, so expect a tight game.",
+        "Both bullpens had Monday off. Atlanta's Fuentes and Iglesias closed out Game 2."
+      ],
+      "moves": [
+        "Total opened 6.5 (under −118) and dropped to 6 on heavy under money.",
+        "Moneyline near a pick'em: LAD −115 / ATL −105."
       ]
     },
     {
       "info": "NLDS Game 3, MIL leads 2-0 | 9:30 PM ET, Petco Park, FS1",
-      "away": {"name": "Milwaukee Brewers", "games": 162, "runs_scored": 832, "runs_allowed": 618,
-               "record": "103-59"},
-      "home": {"name": "San Diego Padres", "games": 162, "runs_scored": 722, "runs_allowed": 681,
-               "record": "91-71"},
-      "away_sp": {"name": "Dustin May", "hand": "R", "ip": 155, "era": 4.70, "gs": 31, "expected_ip": 4.7,
-                  "notes": "ip/gs estimated; 5.65 ERA in 10 starts since joining MIL"},
-      "home_sp": {"name": "Nick Pivetta", "hand": "R", "ip": 44, "era": 2.86, "gs": 8, "expected_ip": 4.6,
-                  "notes": "ip estimated; missed Apr 12 - Sep 8 (flexor strain), 3.1 IP in Wild Card start"},
-      "odds": {"ml": {"away": 113, "home": -136},
-               "run_line": {"away": [1.5, -201], "home": [-1.5, 165]},
-               "total": {"line": 7, "over": -109, "under": -111}},
+      "away": {
+        "name": "Milwaukee Brewers",
+        "games": 162,
+        "runs_scored": 832,
+        "runs_allowed": 618,
+        "record": "103-59"
+      },
+      "home": {
+        "name": "San Diego Padres",
+        "games": 162,
+        "runs_scored": 722,
+        "runs_allowed": 681,
+        "record": "91-71"
+      },
+      "away_sp": {
+        "name": "Dustin May",
+        "hand": "R",
+        "ip": 155,
+        "era": 4.7,
+        "gs": 31,
+        "expected_ip": 4.7,
+        "notes": "ip/gs estimated; 5.65 ERA in 10 starts since joining MIL"
+      },
+      "home_sp": {
+        "name": "Nick Pivetta",
+        "hand": "R",
+        "ip": 44,
+        "era": 2.86,
+        "gs": 8,
+        "expected_ip": 4.6,
+        "notes": "ip estimated; missed Apr 12 - Sep 8 (flexor strain), 3.1 IP in Wild Card start"
+      },
+      "odds": {
+        "ml": {
+          "away": 113,
+          "home": -136
+        },
+        "run_line": {
+          "away": [
+            1.5,
+            -201
+          ],
+          "home": [
+            -1.5,
+            165
+          ]
+        },
+        "total": {
+          "line": 7,
+          "over": -109,
+          "under": -111
+        }
+      },
       "props": [
-        {"kind": "homer", "player": "Fernando Tatis Jr.", "team": "home", "hr": 25, "pa": 680, "slot": 1, "odds": 478},
-        {"kind": "homer", "player": "Manny Machado", "team": "home", "hr": 30, "pa": 650, "slot": 3, "odds": 484}
+        {
+          "kind": "homer",
+          "player": "Fernando Tatis Jr.",
+          "team": "home",
+          "hr": 25,
+          "pa": 680,
+          "slot": 1,
+          "odds": 478
+        },
+        {
+          "kind": "homer",
+          "player": "Manny Machado",
+          "team": "home",
+          "hr": 30,
+          "pa": 650,
+          "slot": 3,
+          "odds": 484
+        }
+      ],
+      "why": [
+        "Milwaukee is the better team (+214 run differential against about +41) and May had a 1.23 ERA in three starts against San Diego this year.",
+        "But May has a 5.65 ERA since the trade, and Megill, Uribe and Ashby each pitched both games; San Diego's bullpen is fully rested.",
+        "Pivetta has a 1.45 ERA in four starts since returning from a five-month elbow injury, but went only 3.1 innings in his Wild Card start.",
+        "Over 7 is the steadiest edge: May's form plus the Brewers' offense (832 runs, 2nd in MLB)."
+      ],
+      "moves": [
+        "Padres −136 / Brewers +113 this morning, total 7 (over −109)."
       ]
+    }
+  ],
+  "headline": "NLDS Game 3s",
+  "notice": "Dodgers–Braves started at 6:00 PM ET, so its pregame prices may be gone. Brewers–Padres starts at 9:30 PM ET. Prices are this morning's published odds; check your app before betting.",
+  "sources": [
+    {
+      "name": "MLB.com",
+      "url": "https://www.mlb.com/news/dodgers-vs-braves-nlds-game-3-starting-lineups-and-pitching-matchup"
+    },
+    {
+      "name": "SI",
+      "url": "https://www.si.com/betting/brewers-vs-padres-prediction-odds-probable-pitchers-prop-bets-for-nlds-game-3-01m470da2dzb"
+    },
+    {
+      "name": "FanDuel Research",
+      "url": "https://www.fanduel.com/research/braves-vs-dodgers-mlb-odds-prediction-point-spread-over-under-and-betting-trends-nlds-game-3-10-6-2026"
+    },
+    {
+      "name": "DraftKings Network",
+      "url": "https://dknetwork.draftkings.com/2026/10/06/best-chris-sale-prop-bet-for-dodgers-vs-braves-nlds-game-3-on-tuesday-10-6-26/"
+    },
+    {
+      "name": "Covers",
+      "url": "https://www.covers.com/mlb/brewers-vs-padres-prediction-picks-odds-tuesday-10-6-2026"
+    },
+    {
+      "name": "Yahoo Sports",
+      "url": "https://sports.yahoo.com/articles/brewers-bullpen-availability-report-nlds-020900574.html"
     }
   ]
 }

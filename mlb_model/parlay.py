@@ -12,7 +12,7 @@ from itertools import combinations
 from typing import Callable
 
 from .model import Game
-from .odds import implied, to_american, to_decimal
+from .odds import ev, implied, to_american, to_decimal
 
 
 @dataclass
@@ -24,6 +24,7 @@ class Leg:
     win: Callable | None = None  # (away_runs, home_runs) -> bool, for score-based legs
     push: Callable | None = None
     prob: float | None = None  # props: the model's probability, independent of the score
+    team: str | None = None  # "away"/"home": whose side a side bet or batter prop is on
 
     def model_prob(self, games: dict[str, Game]) -> float:
         return self.prob if self.win is None else games[self.game].prob(self.win)
@@ -40,9 +41,9 @@ def game_legs(label: str, away: str, home: str, odds: dict) -> list[Leg]:
     legs = []
     ml = odds.get("ml") or {}
     if ml.get("away"):
-        legs.append(Leg(label, "ml", f"{away} ML", ml["away"], lambda a, h: a > h))
+        legs.append(Leg(label, "ml", f"{away} ML", ml["away"], lambda a, h: a > h, team="away"))
     if ml.get("home"):
-        legs.append(Leg(label, "ml", f"{home} ML", ml["home"], lambda a, h: h > a))
+        legs.append(Leg(label, "ml", f"{home} ML", ml["home"], lambda a, h: h > a, team="home"))
     for side, team in (("away", away), ("home", home)):
         spread, cost = (odds.get("run_line") or {}).get(side) or (None, None)
         if cost is None:
@@ -50,7 +51,7 @@ def game_legs(label: str, away: str, home: str, odds: dict) -> list[Leg]:
         sign = 1 if side == "away" else -1  # margin from this team's point of view
         legs.append(Leg(label, "rl", f"{team} {spread:+g}", cost,
                         lambda a, h, s=spread, g=sign: g * (a - h) + s > 0,
-                        lambda a, h, s=spread, g=sign: g * (a - h) + s == 0))
+                        lambda a, h, s=spread, g=sign: g * (a - h) + s == 0, team=side))
     total = odds.get("total") or {}
     if total.get("line") is not None:
         line = total["line"]
@@ -104,15 +105,33 @@ def price(legs, games: dict[str, Game]) -> Parlay:
     return Parlay(tuple(legs), hit, payout, mult - 1)
 
 
+def leg_ev(leg: Leg, games: dict[str, Game]) -> float:
+    return ev(leg.model_prob(games), leg.odds, leg.push_prob(games))
+
+
+def clashes(combo) -> bool:
+    """Two bets on one market (both sides, ML + run line, over + under), or a batter's homer
+    riding with a bet on the other team: those pull against each other, and props are priced
+    as independent of the score, so the model would overrate the combo."""
+    keys = [(leg.game, "side" if leg.market in ("ml", "rl") else leg.market) for leg in combo]
+    if len(set(keys)) < len(keys):
+        return True
+    sides = {(leg.game, leg.team) for leg in combo if leg.market in ("ml", "rl")}
+    other = {"away": "home", "home": "away"}
+    return any(leg.market.startswith("hr:") and (leg.game, other.get(leg.team)) in sides for leg in combo)
+
+
 def search(legs: list[Leg], games: dict[str, Game], target: float | None = None,
-           min_legs: int = 2, max_legs: int = 6, top: int = 5) -> list[Parlay]:
-    """Best parlays by model EV; with a target, only those paying 0.75x-1.5x of it."""
+           min_legs: int = 2, max_legs: int = 6, top: int = 5, pool: int = 14) -> list[Parlay]:
+    """Best parlays by model EV; with a target, only those paying 0.75x-1.5x of it.
+    On a big slate only the `pool` best single bets are combined, to keep it quick."""
+    if len(legs) > pool:
+        legs = sorted(legs, key=lambda leg: leg_ev(leg, games), reverse=True)[:pool]
     found = []
     for n in range(min_legs, max_legs + 1):
         for combo in combinations(legs, n):
-            keys = [(leg.game, "side" if leg.market in ("ml", "rl") else leg.market) for leg in combo]
-            if len(set(keys)) < n:
-                continue  # two bets on one market (both sides, ML + run line, over + under...)
+            if clashes(combo):
+                continue
             payout = 1.0
             for leg in combo:
                 payout *= to_decimal(leg.odds)
@@ -136,3 +155,21 @@ def describe(p: Parlay) -> str:
 def edge(leg: Leg, games: dict[str, Game]) -> float:
     """Model probability minus the book's implied probability (vig included)."""
     return leg.model_prob(games) - implied(leg.odds)
+
+
+def likeliest(legs: list[Leg], games: dict[str, Game], min_payout: float = 2.0, max_legs: int = 3,
+              top: int = 3) -> list[Parlay]:
+    """Parlays most likely to cash that still pay at least `min_payout` times the stake.
+    Built only from bets the model doesn't think are badly overpriced (EV above -5%)."""
+    pool = sorted((leg for leg in legs if leg_ev(leg, games) > -0.05),
+                  key=lambda leg: leg.model_prob(games), reverse=True)[:12]
+    found = []
+    for n in range(2, max_legs + 1):
+        for combo in combinations(pool, n):
+            if clashes(combo):
+                continue
+            p = price(combo, games)
+            if p.payout >= min_payout and p.hit > 0:
+                found.append(p)
+    found.sort(key=lambda p: p.hit, reverse=True)
+    return found[:top]

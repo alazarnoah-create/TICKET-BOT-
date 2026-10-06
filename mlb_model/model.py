@@ -105,12 +105,17 @@ def regress(value: float, mean: float, n: float, k: float) -> float:
     return w * value + (1 - w) * mean
 
 
+def effective_fip(p: Pitcher, lg: League) -> float | None:
+    """FIP as given, else worked out from K, BB, HBP and HR (unknown HR: league rate, like xFIP)."""
+    if p.fip is not None or p.k is None or p.bb is None or not p.ip:
+        return p.fip
+    hr = p.hr if p.hr is not None else lg.hr9 * p.ip / 9
+    return (13 * hr + 3 * (p.bb + p.hbp) - 2 * p.k) / p.ip + lg.fip_const
+
+
 def pitcher_era(p: Pitcher, lg: League) -> float:
     """Best guess at a starter's true-talent run rate on the ERA scale."""
-    fip = p.fip
-    if fip is None and p.k is not None and p.bb is not None and p.ip:
-        hr = p.hr if p.hr is not None else lg.hr9 * p.ip / 9  # unknown HR: league rate (xFIP)
-        fip = (13 * hr + 3 * (p.bb + p.hbp) - 2 * p.k) / p.ip + lg.fip_const
+    fip = effective_fip(p, lg)
     if p.era is None and fip is None:
         return lg.era
     if fip is None:  # ERA alone is noisy: regress harder

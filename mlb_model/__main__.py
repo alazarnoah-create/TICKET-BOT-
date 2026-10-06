@@ -3,6 +3,7 @@
   python3 -m mlb_model today                      today's games, live from the MLB Stats API
   python3 -m mlb_model today --odds odds.json     ...priced against odds you typed in
   python3 -m mlb_model file mlb_model/games/2026-10-06.json   a hand-built slate (no internet)
+  python3 -m mlb_model page mlb_model/games/2026-10-06.json   ...as the MLB Bet Lab web page
   python3 -m mlb_model backtest --season 2025     how well-calibrated the team model was
 
 Set ODDS_API_KEY (free at the-odds-api.com) and `today` pulls live odds too.
@@ -12,59 +13,15 @@ Options: --target 50 (long-shot parlay size), --bankroll 100 (for stake sizes).
 from __future__ import annotations
 
 import argparse
-import dataclasses
 import json
 import os
 import sys
 import urllib.error
 from datetime import date
 
-from . import props as P
-from .model import TEAMS, League, Matchup, Pitcher, Team, project
-from .odds import ev, kelly, no_vig
-from .parlay import Leg, describe, game_legs, search
-
-
-def abbr(name: str) -> str:
-    return TEAMS[name][1] if name in TEAMS else name.split()[-1][:3].upper()
-
-
-def build(cls, data: dict):
-    """A dataclass from a dict, ignoring keys it doesn't know (notes, sources...)."""
-    names = {f.name for f in dataclasses.fields(cls)}
-    return cls(**{k: v for k, v in data.items() if k in names})
-
-
-def load_file(path: str) -> tuple[League, list[dict]]:
-    with open(path) as f:
-        data = json.load(f)
-    entries = []
-    for g in data["games"]:
-        m = Matchup(build(Team, g["away"]), build(Team, g["home"]), build(Pitcher, g["away_sp"]),
-                    build(Pitcher, g["home_sp"]), park=g.get("park"),
-                    postseason=data.get("postseason", False), weather=g.get("weather", 1.0))
-        entries.append({"label": f"{m.away.name} @ {m.home.name}", "info": g.get("info", ""),
-                        "matchup": m, "odds": g.get("odds") or {}, "props": g.get("props") or []})
-    return build(League, data.get("league", {})), entries
-
-
-def prop_legs(label: str, m: Matchup, specs: list[dict], lg: League) -> list[Leg]:
-    legs = []
-    for s in specs:
-        if s["kind"] == "strikeouts":
-            p = m.away_sp if s["pitcher"] == "away" else m.home_sp
-            over = P.strikeout_over(s["line"], P.strikeout_mean(p, m.postseason, s.get("opp_k_factor", 1.0)))
-            last = p.name.split()[-1]
-            if s.get("over"):
-                legs.append(Leg(label, f"k:{p.name}", f"{last} o{s['line']:g} K", s["over"], prob=over))
-            if s.get("under"):
-                legs.append(Leg(label, f"k:{p.name}", f"{last} u{s['line']:g} K", s["under"], prob=1 - over))
-        elif s["kind"] == "homer":
-            opp = m.home_sp if s["team"] == "away" else m.away_sp
-            factor = 0.6 * P.pitcher_hr_factor(opp, lg) + 0.4  # the starter sees ~60% of his PAs
-            prob = P.homer_prob(s["hr"], s["pa"], s.get("slot", 5), factor, m.park or m.home.home_park)
-            legs.append(Leg(label, f"hr:{s['player']}", f"{s['player']} HR", s["odds"], prob=prob))
-    return legs
+from .model import League, project
+from .parlay import describe, game_legs, search
+from .slate import abbr, bet_rows, load_file, prop_legs
 
 
 def report(lg: League, entries: list[dict], target: float, bankroll: float) -> None:
@@ -82,13 +39,10 @@ def report(lg: League, entries: list[dict], target: float, bankroll: float) -> N
         if not legs:
             continue
         print(f"  {'Bet':<22}{'Price':>7}{'Fair':>8}{'Model':>8}{'EV/$1':>8}{'Stake':>8}")
-        for leg in legs:
-            twin = [x for x in legs if x.market == leg.market and x is not leg]
-            fair = no_vig(leg.odds, twin[0].odds)[0] if twin else None
-            p, push = leg.model_prob(games), leg.push_prob(games)
-            stake = kelly(p / (1 - push) if push < 1 else 0, leg.odds) * bankroll
-            print(f"  {leg.name:<22}{leg.odds:>+7d}{f'{fair:.1%}' if fair else '':>8}{p:>8.1%}"
-                  f"{ev(p, leg.odds, push):>+8.1%}{f'${stake:.2f}' if stake else '-':>8}")
+        for r in bet_rows(legs, games, bankroll):
+            leg, fair, stake = r["leg"], r["fair"], r["stake"]
+            print(f"  {leg.name:<22}{leg.odds:>+7d}{f'{fair:.1%}' if fair else '':>8}{r['model']:>8.1%}"
+                  f"{r['ev']:>+8.1%}{f'${stake:.2f}' if stake else '-':>8}")
         print("  Best 3-leg same-game parlays (model EV; the book's SGP price will be lower):")
         for par in search(legs, games, min_legs=3, max_legs=3, top=2):
             print("    " + describe(par))
@@ -122,8 +76,9 @@ def main() -> None:
 def run(argv: list[str]) -> None:
     ap = argparse.ArgumentParser(prog="mlb_model", description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("command", choices=["today", "file", "backtest"])
-    ap.add_argument("path", nargs="?", help="slate JSON for `file`")
+    ap.add_argument("command", choices=["today", "file", "page", "backtest"])
+    ap.add_argument("path", nargs="?", help="slate JSON for `file` and `page`")
+    ap.add_argument("--out", help="where `page` writes the web page (default: next to the slate)")
     ap.add_argument("--date", default=date.today().isoformat())
     ap.add_argument("--odds", help='JSON {"Away Team @ Home Team": {odds}} for `today`')
     ap.add_argument("--target", type=float, default=50)
@@ -137,10 +92,16 @@ def run(argv: list[str]) -> None:
         from .backtest import run, season_games
         print(json.dumps(run(season_games(args.season, args.start, args.end)), indent=2))
         return
-    if args.command == "file":
+    if args.command in ("file", "page"):
         if not args.path:
-            ap.error("`file` needs a slate JSON path")
-        lg, entries = load_file(args.path)
+            ap.error(f"`{args.command}` needs a slate JSON path")
+        lg, entries, meta = load_file(args.path)
+        if args.command == "page":
+            from .page import write_page
+            out = args.out or args.path.rsplit(".", 1)[0] + ".html"
+            write_page(lg, entries, meta, out, args.target, args.bankroll)
+            print(f"Wrote {out}")
+            return
     else:
         from .statsapi import matchups
         lg, entries = matchups(args.date)

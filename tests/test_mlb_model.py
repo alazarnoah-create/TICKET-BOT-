@@ -7,10 +7,12 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from mlb_model import backtest, oddsapi, statsapi  # noqa: E402
-from mlb_model.__main__ import load_file, report  # noqa: E402
+from mlb_model.__main__ import report  # noqa: E402
+from mlb_model.slate import load_file  # noqa: E402
 from mlb_model.model import Game, League, Matchup, Pitcher, Team, pitcher_era, project, runs_pmf  # noqa: E402
 from mlb_model.odds import ev, kelly, no_vig, to_american, to_decimal  # noqa: E402
-from mlb_model.parlay import game_legs, price, search  # noqa: E402
+from mlb_model.page import render, slate_data  # noqa: E402
+from mlb_model.parlay import Leg, clashes, game_legs, likeliest, price, search  # noqa: E402
 from mlb_model.props import homer_prob, strikeout_over  # noqa: E402
 
 SLATE = Path(__file__).resolve().parent.parent / "mlb_model" / "games" / "2026-10-06.json"
@@ -102,6 +104,20 @@ class Parlays(unittest.TestCase):
             self.assertEqual(len(keys), len(set(keys)))
         for par in search(legs, self.games, target=10, top=50):
             self.assertTrue(7.5 <= par.payout <= 15)
+
+
+    def test_clashes_and_likeliest(self):
+        legs = game_legs("g1", "A", "H", self.odds)
+        by = {leg.name: leg for leg in legs}
+        homer = Leg("g1", "hr:Slugger", "Slugger HR", 400, prob=0.15, team="home")
+        self.assertTrue(clashes([by["A ML"], homer]))  # away bet + home batter homer
+        self.assertFalse(clashes([by["H ML"], homer]))
+        self.assertTrue(clashes([by["A ML"], by["H -1.5"]]))
+        both = game_legs("g2", "A2", "H2", self.odds)
+        best = likeliest(legs + both, self.games, min_payout=2.0)
+        self.assertTrue(best)
+        self.assertTrue(all(p.payout >= 2.0 for p in best))
+        self.assertEqual([p.hit for p in best], sorted((p.hit for p in best), reverse=True))
 
 
 class Props(unittest.TestCase):
@@ -213,7 +229,7 @@ class Backtest(unittest.TestCase):
 
 class Slate(unittest.TestCase):
     def test_todays_slate_runs(self):
-        lg, entries = load_file(str(SLATE))
+        lg, entries, meta = load_file(str(SLATE))
         self.assertEqual(len(entries), 2)
         buf = io.StringIO()
         with contextlib.redirect_stdout(buf):
@@ -221,6 +237,20 @@ class Slate(unittest.TestCase):
         out = buf.getvalue()
         self.assertIn("Los Angeles Dodgers @ Atlanta Braves", out)
         self.assertIn("Long shots paying ~50x", out)
+
+    def test_page(self):
+        lg, entries, meta = load_file(str(SLATE))
+        data = slate_data(lg, entries, meta)
+        self.assertEqual(len(data["games"]), 2)
+        self.assertTrue(data["safest"] and data["likeliest"] and data["longshots"])
+        self.assertTrue(all(b["model"] >= 0.55 for b in data["safest"]))
+        g = data["games"][0]
+        self.assertAlmostEqual(g["away"]["win"] + g["home"]["win"], 1)
+        html = render(data)
+        self.assertNotIn("__SLATE_JSON__", html)
+        self.assertIn('<script id="slate" type="application/json">{', html)
+        empty = render(slate_data(lg, [], {"date": "2026-12-01"}))
+        self.assertIn('"games":[]', empty)
 
 
 if __name__ == "__main__":
