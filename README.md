@@ -87,16 +87,24 @@ window. Eventbrite flags it with CAPTCHAs and "unusual activity", so use `run` i
 A separate tool in this folder: it projects MLB games and prices bets and parlays against the odds.
 No extra installs (plain Python 3.9+).
 
+**One-time setup**
+
+1. Get a free odds key at [the-odds-api.com](https://the-odds-api.com). The free plan's 500 credits
+   a month cover about 160 runs (each run uses 3).
+2. In this folder, make a text file named `odds_api_key.txt` with just the key in it.
+
+**Every day:** double-click **MLB Bets.command** in Finder (the first time, right-click it → Open).
+Or in Terminal, in this folder:
+
 ```bash
-python3 -m mlb_model today                                  # today's games, live from MLB's free Stats API
-python3 -m mlb_model today --date 2026-10-07 --bankroll 200
-python3 -m mlb_model file mlb_model/games/2026-10-06.json   # a slate typed in by hand, works offline
-python3 -m mlb_model backtest --season 2025                 # checks the model on last season
+bash bets                                    # today's games, bets and parlays
+bash bets today --date 2026-10-07 --bankroll 200
+bash bets backtest --season 2025             # checks the model on last season
+bash bets file mlb_model/games/2026-10-06.json   # a slate typed in by hand, works offline
 ```
 
-For live odds, get a free key at [the-odds-api.com](https://the-odds-api.com) and run
-`ODDS_API_KEY=yourkey python3 -m mlb_model today`. Or pass `--odds odds.json` with
-`{"Away Team @ Home Team": {"ml": {"away": -115, "home": -105}, "run_line": {"away": [-1.5, 161], "home": [1.5, -196]}, "total": {"line": 6, "over": -115, "under": -105}}}`.
+Without a key you still get each game's projected runs and win chances, just no bets.
+If you see a certificate error, run `python3 -m pip install certifi` once.
 
 **How it works**
 

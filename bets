@@ -1,0 +1,11 @@
+#!/bin/bash
+# Today's MLB bets from mlb_model. Put your free the-odds-api.com key in odds_api_key.txt
+# (same folder) to get prices, bets and parlays. Extra options go through, e.g.
+#   bash bets today --date 2026-10-07 --bankroll 200      bash bets backtest --season 2025
+cd "$(dirname "$0")"
+PY=python3
+[ -x .venv/bin/python ] && PY=.venv/bin/python  # the ticket bot's setup already has certifi
+if [ -z "$ODDS_API_KEY" ] && [ -f odds_api_key.txt ]; then
+  export ODDS_API_KEY="$(tr -d '[:space:]' < odds_api_key.txt)"
+fi
+exec "$PY" -m mlb_model "${@:-today}"

@@ -1,3 +1,4 @@
 config.json
 __pycache__/
 .venv/
+odds_api_key.txt

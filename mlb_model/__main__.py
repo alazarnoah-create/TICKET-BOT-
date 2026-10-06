@@ -6,6 +6,7 @@
   python3 -m mlb_model backtest --season 2025     how well-calibrated the team model was
 
 Set ODDS_API_KEY (free at the-odds-api.com) and `today` pulls live odds too.
+Easiest: put the key in odds_api_key.txt and run `bash bets` (or double-click "MLB Bets.command").
 Options: --target 50 (long-shot parlay size), --bankroll 100 (for stake sizes).
 """
 from __future__ import annotations
@@ -14,6 +15,8 @@ import argparse
 import dataclasses
 import json
 import os
+import sys
+import urllib.error
 from datetime import date
 
 from . import props as P
@@ -89,7 +92,11 @@ def report(lg: League, entries: list[dict], target: float, bankroll: float) -> N
         print("  Best 3-leg same-game parlays (model EV; the book's SGP price will be lower):")
         for par in search(legs, games, min_legs=3, max_legs=3, top=2):
             print("    " + describe(par))
-    if target and every_leg:
+    if not every_leg:
+        print("\nNo odds loaded, so no bets yet. Put your free the-odds-api.com key in"
+              " odds_api_key.txt in this folder (see README) and run again.")
+        return
+    if target:
         print(f"\n=== Long shots paying ~{target:g}x, best model EV first")
         for par in search(every_leg, games, target=target, min_legs=2, max_legs=6) or []:
             print("    " + describe(par))
@@ -98,6 +105,21 @@ def report(lg: League, entries: list[dict], target: float, bankroll: float) -> N
 
 
 def main() -> None:
+    try:
+        run(sys.argv[1:])
+    except urllib.error.HTTPError as exc:
+        if "the-odds-api" in exc.url and exc.code in (401, 403):
+            sys.exit("The Odds API turned down the key in odds_api_key.txt. Check it, or your free"
+                     " 500 monthly requests may be used up.")
+        sys.exit(f"Server error {exc.code} from {exc.url.split('?')[0]}. Try again in a minute.")
+    except urllib.error.URLError as exc:
+        if "CERTIFICATE_VERIFY_FAILED" in str(exc):
+            sys.exit("Your Python can't check web certificates. Run this once, then try again:\n"
+                     "  python3 -m pip install certifi")
+        sys.exit(f"Couldn't reach the internet ({exc.reason}). Check your connection.")
+
+
+def run(argv: list[str]) -> None:
     ap = argparse.ArgumentParser(prog="mlb_model", description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("command", choices=["today", "file", "backtest"])
@@ -109,7 +131,7 @@ def main() -> None:
     ap.add_argument("--season", type=int, default=date.today().year - 1)
     ap.add_argument("--start")
     ap.add_argument("--end")
-    args = ap.parse_args()
+    args = ap.parse_args(argv)
 
     if args.command == "backtest":
         from .backtest import run, season_games
