@@ -3,6 +3,8 @@ web/template.html as JSON (the page draws itself from that, and its calculator r
 from __future__ import annotations
 
 import json
+import math
+import re
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -18,8 +20,56 @@ def tag(ev: float) -> str:
     return "pick" if ev >= PICK_EV else "thin" if ev >= 0 else "pass"
 
 
-def parlay_json(p: Parlay, games) -> dict:
-    return {"legs": [{"name": leg.name, "odds": leg.odds, "model": leg.model_prob(games)} for leg in p.legs],
+def nickname(team: str) -> str:
+    """"Milwaukee Brewers" -> "Brewers", "Boston Red Sox" -> "Red Sox"."""
+    words = team.split()
+    return " ".join(words[-2:]) if words[-1] in ("Sox", "Jays") else words[-1]
+
+
+def plain(leg, names: dict) -> str:
+    """A bet in everyday words: "MIL +1.5" -> "Brewers win, or lose by just 1"."""
+    if leg.market == "ml":
+        return f"{names[leg.team]} win"
+    if leg.market == "rl":
+        spread = float(leg.name.rsplit(" ", 1)[1])
+        if spread > 0:
+            margin = math.ceil(spread) - 1
+            return f"{names[leg.team]} win, or lose by just {margin}" if margin == 1 else \
+                f"{names[leg.team]} win, or lose by {margin} or less"
+        return f"{names[leg.team]} win by {math.floor(-spread) + 1} or more"
+    if leg.market == "total":
+        side, line = leg.name.split()
+        line = float(line)
+        refund = f" (exactly {line:g} = money back)" if line.is_integer() else ""
+        if side == "Over":
+            return f"{math.floor(line) + 1} or more total runs{refund}"
+        return f"{math.ceil(line) - 1} or fewer total runs{refund}"
+    if leg.market.startswith("k:"):
+        who, line = leg.market[2:].split()[-1], float(leg.name.split()[-2][1:])
+        if leg.name.split()[-2].startswith("o"):
+            return f"{who} gets {math.floor(line) + 1}+ strikeouts"
+        return f"{who} gets {math.ceil(line) - 1} or fewer strikeouts"
+    if leg.market.startswith("hr:"):
+        return f"{leg.market[3:]} hits a home run"
+    return leg.name
+
+
+def first_pitch(info: str) -> str:
+    m = re.search(r"\d{1,2}:\d{2}\s*[AP]M(?:\s*ET)?", info)
+    return m.group(0) if m else ""
+
+
+def leg_json(leg, games, ctx: dict, row: dict | None = None) -> dict:
+    c = ctx[leg.game]
+    out = {"name": leg.name, "plain": plain(leg, c["names"]), "game": c["short"], "when": c["when"],
+           "odds": leg.odds, "model": leg.model_prob(games)}
+    if row:
+        out.update(fair=row["fair"], ev=row["ev"], tag=tag(row["ev"]), push=row["push"])
+    return out
+
+
+def parlay_json(p: Parlay, games, ctx: dict) -> dict:
+    return {"legs": [leg_json(leg, games, ctx) for leg in p.legs],
             "payout": p.payout, "hit": p.hit, "ev": p.ev, "same_game": p.same_game}
 
 
@@ -40,44 +90,50 @@ def _calc_odds(odds: dict) -> dict:
 
 
 def slate_data(lg: League, entries: list[dict], meta: dict, target: float = 50, bankroll: float = 100) -> dict:
-    games, out, every = {}, [], []
+    games, ctx, out, every = {}, {}, [], []
     for e in entries:
-        m, raw = e["matchup"], e["raw"]
-        g = games[e["label"]] = project(m, lg)
+        m = e["matchup"]
+        games[e["label"]] = project(m, lg)
+        names = {"away": nickname(m.away.name), "home": nickname(m.home.name)}
+        ctx[e["label"]] = {"names": names, "short": f"{names['away']} @ {names['home']}",
+                           "when": first_pitch(e["info"])}
+    for e in entries:
+        m, raw, g = e["matchup"], e["raw"], games[e["label"]]
         a, h = abbr(m.away.name), abbr(m.home.name)
         legs = game_legs(e["label"], a, h, e["odds"]) + prop_legs(e["label"], m, e["props"], lg)
         every += legs
         # a 3-leg parlay when one is worth it, else the best 2-leg (side + total)
         best = sorted(search(legs, games, min_legs=3, max_legs=3, top=1)
                       + search(legs, games, min_legs=2, max_legs=2, top=1), key=lambda p: p.ev, reverse=True)
+        names = ctx[e["label"]]["names"]
         out.append({
-            "label": f"{a} @ {h}", "info": e["info"], "why": raw.get("why", []), "moves": raw.get("moves", []),
-            "away": {"abbr": a, "name": m.away.name, "record": raw["away"].get("record", ""),
+            "label": f"{a} @ {h}", "short": ctx[e["label"]]["short"], "when": ctx[e["label"]]["when"],
+            "info": e["info"], "why": raw.get("why", []), "moves": raw.get("moves", []),
+            "away": {"abbr": a, "name": m.away.name, "nick": names["away"], "record": raw["away"].get("record", ""),
                      "sp": m.away_sp.name, "hand": m.away_sp.hand, "runs": g.away_mean, "win": g.away_win},
-            "home": {"abbr": h, "name": m.home.name, "record": raw["home"].get("record", ""),
+            "home": {"abbr": h, "name": m.home.name, "nick": names["home"], "record": raw["home"].get("record", ""),
                      "sp": m.home_sp.name, "hand": m.home_sp.hand, "runs": g.home_mean, "win": g.home_win},
             "fair_total": g.fair_total(), "posted_total": (e["odds"].get("total") or {}).get("line"),
-            "bets": [{"name": r["leg"].name, "odds": r["leg"].odds, "fair": r["fair"], "model": r["model"],
-                      "ev": r["ev"], "tag": tag(r["ev"])} for r in bet_rows(legs, games, bankroll)],
-            "parlay": parlay_json(best[0], games) if best else None,
+            "bets": [leg_json(r["leg"], games, ctx, r) for r in bet_rows(legs, games, bankroll)],
+            "parlay": parlay_json(best[0], games, ctx) if best else None,
             "calc": {"away": _side(m, "away", lg), "home": _side(m, "home", lg),
                      "odds": _calc_odds(e["odds"]), "post": m.postseason},
         })
-    label_of = {e["label"]: f"{abbr(e['matchup'].away.name)} @ {abbr(e['matchup'].home.name)}" for e in entries}
-    safest = sorted((leg for leg in every if leg_ev(leg, games) > -0.05 and leg.model_prob(games) >= 0.55),
-                    key=lambda leg: leg.model_prob(games), reverse=True)[:8]
     rows = {id(r["leg"]): r for r in bet_rows(every, games, bankroll)}
+    safest = sorted((leg for leg in every if leg_ev(leg, games) > -0.05 and leg.model_prob(games) >= 0.55),
+                    key=lambda leg: leg.model_prob(games), reverse=True)[:5]
+    value = sorted((leg for leg in every if rows[id(leg)]["ev"] >= PICK_EV),
+                   key=lambda leg: rows[id(leg)]["ev"], reverse=True)[:4]
     return {
         "date": meta.get("date", ""), "headline": meta.get("headline", ""), "notice": meta.get("notice", ""),
         "notes": meta.get("notes", []), "sources": meta.get("sources", []),
         "updated": datetime.now(timezone.utc).isoformat(timespec="minutes"),
         "league": {"rpg": lg.rpg, "era": lg.era}, "target": target, "games": out,
-        "safest": [{"game": label_of[leg.game], "name": leg.name, "odds": leg.odds,
-                    "model": rows[id(leg)]["model"], "fair": rows[id(leg)]["fair"], "ev": rows[id(leg)]["ev"]}
-                   for leg in safest],
-        "likeliest": [parlay_json(p, games) for p in likeliest(every, games)],
-        "longshots": [parlay_json(p, games) for p in search(every, games, target=target, min_legs=2,
-                                                             max_legs=6, top=2)],
+        "safest": [leg_json(leg, games, ctx, rows[id(leg)]) for leg in safest],
+        "value": [leg_json(leg, games, ctx, rows[id(leg)]) for leg in value],
+        "likeliest": [parlay_json(p, games, ctx) for p in likeliest(every, games)],
+        "longshots": [parlay_json(p, games, ctx) for p in search(every, games, target=target, min_legs=2,
+                                                                  max_legs=6, top=2)],
     }
 
 
