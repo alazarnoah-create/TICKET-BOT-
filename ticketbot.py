@@ -402,16 +402,18 @@ def choose_event(links, cfg, drop):
         if keyword.search(text) or keyword.search(href.replace("-", " ")):
             events[href] = events.get(href, "") + " " + text
     today = drop.date()
-    dated, undated = [], []
+    upcoming = []  # in page order, skipping parties that have already happened
     for href, text in events.items():
         d = event_date(href.replace("-", " ") + " " + text, today)
-        if d is None:
-            undated.append(href)
-        elif d >= today:
-            dated.append((d, href))
-    if dated:
-        return min(dated)[1]
-    return undated[0] if undated else None
+        if d is None or d >= today:
+            upcoming.append((d, href))
+    if not upcoming:
+        return None
+    if all(d is not None for d, _ in upcoming):
+        return min(upcoming)[1]  # every name has a date: take the soonest
+    # Some names have no date (e.g. "I Love Thanksgiving Thursday Dollar Beers"): Eventbrite lists
+    # upcoming events soonest first, so take the first one on the page.
+    return upcoming[0][1]
 
 
 # ---------------------------------------------------------------- Safari mode
